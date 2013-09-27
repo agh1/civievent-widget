@@ -26,7 +26,7 @@ Author URI: http://aghstrategies.com/
 
 add_action( 'widgets_init', function(){
      register_widget( 'civievent_Widget' );
-     wp_register_style( 'civieventStylesheet', plugins_url('civievent.css', __FILE__) );
+     wp_register_style( 'civievent-widget-Stylesheet', plugins_url('civievent-widget.css', __FILE__) );
 });
 
 
@@ -35,8 +35,8 @@ class civievent_Widget extends WP_Widget {
 	public function __construct() {
 		// widget actual processes
 		parent::__construct(
-			'civievent_widget', // Base ID
-			__('CiviEvent', 'text_domain'), // Name
+			'civievent-widget', // Base ID
+			__('CiviEvent Widget', 'text_domain'), // Name
 			array( 'description' => __( 'displays public CiviCRM events', 'text_domain' ), ) // Args
 		);
 		civicrm_initialize();
@@ -79,7 +79,7 @@ class civievent_Widget extends WP_Widget {
       }
       if ($title) {
         $row .= ' <span class="civievent-widget-event-title">';
-        $row .= '<span class="civievent-infolink">';
+        $row .= '<span class="civievent-widget-infolink">';
         $row .= ($url) ? "<a href=\"$url\">$title</a>" : $title;
         $row .= '</span>';
 
@@ -89,7 +89,7 @@ class civievent_Widget extends WP_Widget {
             && (strtotime(CRM_Utils_Array::value('registration_end_date', $event)) > time()
               || !CRM_Utils_Array::value('registration_end_date', $event))) {
           $reglink = CRM_Utils_System::url('civicrm/event/register', "reset=1&id={$event['event_id']}");
-          $row .= '<span class="civievent-reglink">';
+          $row .= '<span class="civievent-widget-reglink">';
           $row .= "<a href=\"$reglink\">" . CRM_Utils_Array::value('registration_link_text', $event, ts('Register')) . '</a>';
           $row .= '</span>';
         }
@@ -105,12 +105,12 @@ class civievent_Widget extends WP_Widget {
     $content .= "<div class=\"civievent-widget-viewall\"><a href=\"$viewall\">" . ts('View all') . '</a></div>';
     $content .= "<div style=\"display: none\">" . print_r($cal, true) . '</div>';
 		echo "<div class=\"widget civievent-widget civievent-widget-{$instance['wtheme']}\">$content</div>";
-    wp_enqueue_style( 'civieventStylesheet' );
+    wp_enqueue_style( 'civievent-widget-Stylesheet' );
 	}
 
  	public function form( $instance ) {
 		// outputs the options form on admin
-		$title = isset( $instance[ 'title' ] ) ? $instance[ 'title' ] : __( 'CiviCRM Events', 'text_domain' );
+		$title = isset( $instance[ 'title' ] ) ? $instance[ 'title' ] : __( 'Upcoming Events', 'text_domain' );
 		$wtheme = isset( $instance[ 'wtheme' ] ) ? $instance[ 'wtheme' ] : __( 'stripe', 'text_domain' );
 		$limit = isset( $instance[ 'limit' ] ) ? $instance[ 'limit' ] : __( 5, 'text_domain' );
 

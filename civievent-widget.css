@@ -48,21 +48,21 @@
   padding: 1ex;
 }
 
-.civievent-widget-divider .civievent-reglink,
-.civievent-widget-stripe .civievent-reglink {
+.civievent-widget-divider .civievent-widget-reglink,
+.civievent-widget-stripe .civievent-widget-reglink {
   display: block;
   padding: .5em 0 0;
 }
 
-.civievent-widget-divider .civievent-reglink a,
-.civievent-widget-stripe .civievent-reglink a {
+.civievent-widget-divider .civievent-widget-reglink a,
+.civievent-widget-stripe .civievent-widget-reglink a {
   display: inline-block;
   color: #ffffff;
   background: #cccccc;
   padding: 0.5ex 0.5em;
 }
 
-.civievent-widget-stripe .civievent-widget-event-odd .civievent-reglink a {
+.civievent-widget-stripe .civievent-widget-event-odd .civievent-widget-reglink a {
   background: #ffffff;
 }
 
