@@ -1,0 +1,92 @@
+.civievent-widget-divider .civievent-widget-list,
+.civievent-widget-stripe .civievent-widget-list {
+  display: table;
+  width: 100%;
+}
+
+.civievent-widget-divider .civievent-widget-event,
+.civievent-widget-stripe .civievent-widget-event {
+  display: table-row;
+}
+
+.civievent-widget-divider .civievent-widget-event-datetime,
+.civievent-widget-divider .civievent-widget-event-title {
+  border-top: solid #333333 1px;
+}
+
+.civievent-widget-divider .civievent-widget-event-0 .civievent-widget-event-datetime,
+.civievent-widget-divider .civievent-widget-event-0 .civievent-widget-event-title {
+  border-top: none;
+}
+
+.civievent-widget-stripe .civievent-widget-event-odd {
+  background: #cccccc;
+}
+
+.civievent-widget-stripe .civievent-widget-event-even {
+  background: #ffffff;
+}
+
+.civievent-widget-divider .civievent-widget-event-datetime,
+.civievent-widget-divider .civievent-widget-event-title {
+  display: table-cell;
+  padding: 1ex 0;
+  vertical-align: top;
+}
+
+.civievent-widget-stripe .civievent-widget-event-datetime,
+.civievent-widget-stripe .civievent-widget-event-title {
+  display: table-cell;
+  padding: 1ex;
+  vertical-align: top;
+}
+
+.civievent-widget-divider .civievent-widget-viewall,
+.civievent-widget-stripe .civievent-widget-viewall {
+  text-align: right;
+}
+
+.civievent-widget-stripe .civievent-widget-viewall {
+  padding: 1ex;
+}
+
+.civievent-widget-divider .civievent-widget-reglink,
+.civievent-widget-stripe .civievent-widget-reglink {
+  display: block;
+  padding: .5em 0 0;
+}
+
+.civievent-widget-divider .civievent-widget-reglink a,
+.civievent-widget-stripe .civievent-widget-reglink a {
+  display: inline-block;
+  color: #ffffff;
+  background: #aaa;
+  padding: 0.5ex 0.5em;
+}
+
+.civievent-widget-divider.civievent-widget-withsummary .civievent-widget-infolink,
+.civievent-widget-divider.civievent-widget-withsummary .civievent-widget-reglink {
+  display: inline-block;
+  vertical-align: top;
+  width: 50%;
+}
+
+.civievent-widget-event-summary {
+  display: block;
+}
+
+.civievent-widget-stripe .civievent-widget-event-odd .civievent-widget-reglink a {
+  background: #ffffff;
+  color: #888;
+}
+
+.civievent-widget-divider .civievent-widget-event-start-date,
+.civievent-widget-divider .civievent-widget-event-start-time,
+.civievent-widget-divider .civievent-widget-event-end-date,
+.civievent-widget-divider .civievent-widget-event-end-time,
+.civievent-widget-stripe .civievent-widget-event-start-date,
+.civievent-widget-stripe .civievent-widget-event-start-time,
+.civievent-widget-stripe .civievent-widget-event-end-date,
+.civievent-widget-stripe .civievent-widget-event-end-time {
+  display: inline-block;
+}
