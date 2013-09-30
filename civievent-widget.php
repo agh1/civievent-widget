@@ -103,7 +103,6 @@ class civievent_Widget extends WP_Widget {
     $content .= '</div>';
     $viewall = CRM_Utils_System::url('civicrm/event/ical', "reset=1&list=1&html=1");
     $content .= "<div class=\"civievent-widget-viewall\"><a href=\"$viewall\">" . ts('View all') . '</a></div>';
-    $content .= "<div style=\"display: none\">" . print_r($cal, true) . '</div>';
 		echo "<div class=\"widget civievent-widget civievent-widget-{$instance['wtheme']}\">$content</div>";
     wp_enqueue_style( 'civievent-widget-Stylesheet' );
 	}
