@@ -39,10 +39,12 @@ class civievent_Widget extends WP_Widget {
 			__('CiviEvent Widget', 'text_domain'), // Name
 			array( 'description' => __( 'displays public CiviCRM events', 'text_domain' ), ) // Args
 		);
+		if (!function_exists('civicrm_initialize')) { return; }
 		civicrm_initialize();
 	}
 
 	public function widget( $args, $instance ) {
+		if (!function_exists('civicrm_initialize')) { return; }
 		// outputs the content of the widget
 		$title = apply_filters( 'widget_title', $instance['title'] );
     $content = $title ? "<h3 class=\"title widget-title civievent-widget-title\">$title</h2>" : '';
@@ -124,6 +126,11 @@ class civievent_Widget extends WP_Widget {
 	}
 
  	public function form( $instance ) {
+		if (!function_exists('civicrm_initialize')) { ?>
+      <h3>You must enable and install CiviCRM to use this plugin.</h3>
+  	  <?php
+	    return;
+		}
 		// outputs the options form on admin
 		$title = isset( $instance[ 'title' ] ) ? $instance[ 'title' ] : __( 'Upcoming Events', 'text_domain' );
 		$wtheme = isset( $instance[ 'wtheme' ] ) ? $instance[ 'wtheme' ] : __( 'stripe', 'text_domain' );
