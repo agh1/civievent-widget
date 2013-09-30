@@ -3,7 +3,7 @@ Contributors: agh1
 Tags: civicrm, events
 Requires at least: 3.3
 Tested up to: 3.6
-Stable tag: master
+Stable tag: 0.2
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
@@ -19,6 +19,11 @@ You can use the CiviEvent widget to add a basic, flexible listing of upcoming pu
 1. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Changelog ==
+
+= 0.2 =
+* New option for displaying event summary
+* Theme adjustments
+* Better handling if CiviCRM itself isn't enabled and installed
 
 = 0.1 =
 * Initial version
