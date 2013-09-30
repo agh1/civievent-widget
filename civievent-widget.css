@@ -31,12 +31,14 @@
 .civievent-widget-divider .civievent-widget-event-title {
   display: table-cell;
   padding: 1ex 0;
+  vertical-align: top;
 }
 
 .civievent-widget-stripe .civievent-widget-event-datetime,
 .civievent-widget-stripe .civievent-widget-event-title {
   display: table-cell;
   padding: 1ex;
+  vertical-align: top;
 }
 
 .civievent-widget-divider .civievent-widget-viewall,
@@ -58,12 +60,24 @@
 .civievent-widget-stripe .civievent-widget-reglink a {
   display: inline-block;
   color: #ffffff;
-  background: #cccccc;
+  background: #aaa;
   padding: 0.5ex 0.5em;
+}
+
+.civievent-widget-divider.civievent-widget-withsummary .civievent-widget-infolink,
+.civievent-widget-divider.civievent-widget-withsummary .civievent-widget-reglink {
+  display: inline-block;
+  vertical-align: top;
+  width: 50%;
+}
+
+.civievent-widget-event-summary {
+  display: block;
 }
 
 .civievent-widget-stripe .civievent-widget-event-odd .civievent-widget-reglink a {
   background: #ffffff;
+  color: #888;
 }
 
 .civievent-widget-divider .civievent-widget-event-start-date,

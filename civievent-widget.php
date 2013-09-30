@@ -45,7 +45,7 @@ class civievent_Widget extends WP_Widget {
 	public function widget( $args, $instance ) {
 		// outputs the content of the widget
 		$title = apply_filters( 'widget_title', $instance['title'] );
-    $content = $title ? "<h3 class=\"title civievent-widget-title\">$title</h2>" : '';
+    $content = $title ? "<h3 class=\"title widget-title civievent-widget-title\">$title</h2>" : '';
 
     $params = array('name' => 'date_format');
     $values = array();
@@ -64,6 +64,7 @@ class civievent_Widget extends WP_Widget {
       $end = CRM_Utils_Array::value('end_date', $event);
       $url = CRM_Utils_Array::value('url', $event);
       $title = CRM_Utils_Array::value('title', $event);
+      $summary = CRM_Utils_Array::value('summary', $event, '');
       $row = '';
       if ($start) {
         $date = '<span class="civievent-widget-event-start-date">' . CRM_Utils_Date::customFormat($start, $date_format) . '</span>';
@@ -93,17 +94,32 @@ class civievent_Widget extends WP_Widget {
           $row .= "<a href=\"$reglink\">" . CRM_Utils_Array::value('registration_link_text', $event, ts('Register')) . '</a>';
           $row .= '</span>';
         }
+        if ($instance['summary']) {
+          $row .= "<span class=\"civievent-widget-event-summary\">$summary</span>";
+        }
         $row .= '</span>';
       }
+
       $oe = ($index&1) ? 'odd' : 'even';
       $content .= "<div class=\"civievent-widget-event civievent-widget-event-$oe civievent-widget-event-$index\">$row</div>";
       $index++;
       if ($index >= $instance['limit']) { break; }
     }
     $content .= '</div>';
-    $viewall = CRM_Utils_System::url('civicrm/event/ical', "reset=1&list=1&html=1");
-    $content .= "<div class=\"civievent-widget-viewall\"><a href=\"$viewall\">" . ts('View all') . '</a></div>';
-		echo "<div class=\"widget civievent-widget civievent-widget-{$instance['wtheme']}\">$content</div>";
+    if ($instance['alllink']) {
+      $viewall = CRM_Utils_System::url('civicrm/event/ical', "reset=1&list=1&html=1");
+      $content .= "<div class=\"civievent-widget-viewall\"><a href=\"$viewall\">" . ts('View all') . '</a></div>';
+    }
+    $classes = array(
+      'widget',
+      'civievent-widget',
+    );
+    $classes[] = (strlen($instance['wtheme'])) ? "civievent-widget-{$instance['wtheme']}" : "civievent-widget-custom";
+    if ($instance['summary']) {
+      $classes[] = 'civievent-widget-withsummary';
+    }
+    $classes = implode(' ', $classes);
+		echo "<div class=\"$classes\">$content</div>";
     wp_enqueue_style( 'civievent-widget-Stylesheet' );
 	}
 
@@ -112,22 +128,30 @@ class civievent_Widget extends WP_Widget {
 		$title = isset( $instance[ 'title' ] ) ? $instance[ 'title' ] : __( 'Upcoming Events', 'text_domain' );
 		$wtheme = isset( $instance[ 'wtheme' ] ) ? $instance[ 'wtheme' ] : __( 'stripe', 'text_domain' );
 		$limit = isset( $instance[ 'limit' ] ) ? $instance[ 'limit' ] : __( 5, 'text_domain' );
+		$summary = isset( $instance[ 'summary' ] ) ? (bool) $instance[ 'summary' ] : false;
+		$alllink = isset( $instance[ 'alllink' ] ) ? (bool) $instance[ 'alllink' ] : false;
 
 		?>
 		<p>
-		<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label> 
+		<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label>
 		<input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $title ); ?>" />
 		</p>
 		<p>
-		<label for="<?php echo $this->get_field_id( 'wtheme' ); ?>"><?php _e( 'Widget theme:' ); ?></label> 
+		<label for="<?php echo $this->get_field_id( 'wtheme' ); ?>"><?php _e( 'Widget theme:' ); ?></label>
 		<input class="widefat" id="<?php echo $this->get_field_id( 'wtheme' ); ?>" name="<?php echo $this->get_field_name( 'wtheme' ); ?>" type="text" value="<?php echo esc_attr( $wtheme ); ?>" />
 		Enter the theme for the widget.  Standard options are "stripe" and "divider", or you can enter your own value, which will be added to the widget class name.
 		</p>
 		<p>
-		<label for="<?php echo $this->get_field_id( 'limit' ); ?>"><?php _e( 'Limit:' ); ?></label> 
+		<label for="<?php echo $this->get_field_id( 'limit' ); ?>"><?php _e( 'Limit:' ); ?></label>
 		<input class="widefat" id="<?php echo $this->get_field_id( 'limit' ); ?>" name="<?php echo $this->get_field_name( 'limit' ); ?>" type="text" value="<?php echo esc_attr( $limit ); ?>" />
 		</p>
-		<?php 
+    <p><input type="checkbox" <?php checked( $summary ); ?> name="<?php echo $this->get_field_name( 'summary' ); ?>" id="<?php echo $this->get_field_id( 'summary' ); ?>" class="checkbox">
+		<label for="<?php echo $this->get_field_id( 'summary' ); ?>">Display summary?</label>
+		</p>
+    <p><input type="checkbox" <?php checked( $alllink ); ?> name="<?php echo $this->get_field_name( 'alllink' ); ?>" id="<?php echo $this->get_field_id( 'alllink' ); ?>" class="checkbox">
+		<label for="<?php echo $this->get_field_id( 'alllink' ); ?>">Display "view all"?</label>
+		</p>
+		<?php
 	}
 
 	public function update( $new_instance, $old_instance ) {
@@ -141,6 +165,8 @@ class civievent_Widget extends WP_Widget {
       $instance['wtheme'] = '';
     }
 		$instance['limit'] = ( ! empty( $new_instance['limit'] ) ) ? intval(strip_tags( $new_instance['limit'] )) : 5;
+		$instance['summary'] = isset( $new_instance['summary'] ) ? (bool) $new_instance['summary'] : false;
+		$instance['alllink'] = isset( $new_instance['alllink'] ) ? (bool) $new_instance['alllink'] : false;
 
 		return $instance;
 	}
