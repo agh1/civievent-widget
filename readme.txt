@@ -7,11 +7,15 @@ Stable tag: 0.3
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
-CiviEvent widget for WordPress, listing public CiviCRM events.  Read more at http://aghstrategies.com/civievent-widget
+CiviEvent widget for WordPress, listing public CiviCRM events.
 
 == Description ==
 
 You can use the CiviEvent widget to add a basic, flexible listing of upcoming public events from CiviCRM.  There's no limit to the number of widgets you can add, and you have options to customize the appearance and number of events.
+
+This plugin requires CiviCRM 4.3 or higher.
+
+Read more at http://aghstrategies.com/civievent-widget
 
 == Installation ==
 

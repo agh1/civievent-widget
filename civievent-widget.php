@@ -42,6 +42,7 @@ class civievent_Widget extends WP_Widget {
 		);
 		if (!function_exists('civicrm_initialize')) { return; }
 		civicrm_initialize();
+		require_once 'CRM/Utils/System.php';
 		$this->_civiversion = CRM_Utils_System::version();
 	}
 
