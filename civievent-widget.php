@@ -3,11 +3,11 @@
 Plugin Name: CiviEvent Widget
 Plugin URI: http://www.aghstrategies.com/civievent-widget
 Description: The CiviEvent Widget plugin displays public CiviCRM events in a widget.
-Version: 0.3
+Version: 0.4
 Author: AGH Strategies, LLC
 Author URI: http://aghstrategies.com/
 */
-/*  Copyright 2013 AGH Strategies, LLC  (email : info@aghstrategies.com)
+/*  Copyright 2013-2015 AGH Strategies, LLC  (email : info@aghstrategies.com)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -31,6 +31,7 @@ add_action( 'widgets_init', function(){
 
 
 class civievent_Widget extends WP_Widget {
+  private $_civiversion = null;
 
 	public function __construct() {
 		// widget actual processes
@@ -41,10 +42,16 @@ class civievent_Widget extends WP_Widget {
 		);
 		if (!function_exists('civicrm_initialize')) { return; }
 		civicrm_initialize();
+
+		require_once 'CRM/Utils/System.php';
+		$this->_civiversion = CRM_Utils_System::version();
 	}
 
 	public function widget( $args, $instance ) {
 		if (!function_exists('civicrm_initialize')) { return; }
+
+    if (version_compare($this->_civiversion, '4.3.alpha1') < 0) { return; }
+
 		// outputs the content of the widget
 		$title = apply_filters( 'widget_title', $instance['title'] );
     $content = $title ? "<h3 class=\"title widget-title civievent-widget-title\">$title</h2>" : '';
@@ -131,6 +138,12 @@ class civievent_Widget extends WP_Widget {
   	  <?php
 	    return;
 		}
+		elseif (version_compare($this->_civiversion, '4.3.alpha1') < 0) { ?>
+      <h3>You must enable and install CiviCRM 4.3 or higher to use this plugin.  You are currently running CiviCRM <?php print $this->_civiversion; ?></h3>
+      <?php
+		  return;
+		}
+
 		// outputs the options form on admin
 		$title = isset( $instance[ 'title' ] ) ? $instance[ 'title' ] : __( 'Upcoming Events', 'text_domain' );
 		$wtheme = isset( $instance[ 'wtheme' ] ) ? $instance[ 'wtheme' ] : __( 'stripe', 'text_domain' );
