@@ -13,8 +13,6 @@ CiviEvent widget for WordPress, listing public CiviCRM events.
 
 You can use the CiviEvent widget to add a basic, flexible listing of upcoming public events from CiviCRM.  There's no limit to the number of widgets you can add, and you have options to customize the appearance and number of events.  There is the option to add the event's city, state, and/or country to the listing if "Show location" is enabled on the event.
 
-There is no limit on the number of widget instances, and each may have its own settings and theme options.
-
 This plugin requires CiviCRM 4.3 or higher.
 
 Read more at http://aghstrategies.com/civievent-widget
