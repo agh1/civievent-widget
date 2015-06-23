@@ -3,7 +3,7 @@ Contributors: agh1
 Tags: civicrm, events
 Requires at least: 3.3
 Tested up to: 4.2
-Stable tag: 1.0
+Stable tag: 1.1
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
@@ -23,6 +23,11 @@ Read more at http://aghstrategies.com/civievent-widget
 1. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Changelog ==
+
+= 1.1 =
+* Suppress repetitive names for city, state, and/or country (e.g. Singapore, Singapore)
+* Wrapped all strings in translate functions
+* Option to set city, state, country divider
 
 = 1.0 =
 * Option to display City, State, and/or Country
