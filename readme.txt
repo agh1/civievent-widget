@@ -2,8 +2,8 @@
 Contributors: agh1
 Tags: civicrm, events
 Requires at least: 3.3
-Tested up to: 3.6
-Stable tag: 0.3
+Tested up to: 4.2
+Stable tag: 1.0
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
@@ -23,6 +23,9 @@ Read more at http://aghstrategies.com/civievent-widget
 1. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Changelog ==
+
+= 1.0 =
+* Option to display City, State, and/or Country
 
 = 0.3 =
 * Solving some numbering confusion in the WP plugin directory
