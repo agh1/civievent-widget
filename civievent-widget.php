@@ -57,8 +57,8 @@ class civievent_Widget extends WP_Widget {
 		// Widget actual processes.
 		parent::__construct(
 			'civievent-widget', // Base ID
-			__( 'CiviEvent Widget', 'text_domain' ), // Name
-			array( 'description' => __( 'displays public CiviCRM events', 'text_domain' ) ) // Args.
+			__( 'CiviEvent Widget', 'civievent-widget' ), // Name
+			array( 'description' => __( 'displays public CiviCRM events', 'civievent-widget' ) ) // Args.
 		);
 		if ( ! function_exists( 'civicrm_initialize' ) ) { return; }
 		civicrm_initialize();
@@ -94,6 +94,7 @@ class civievent_Widget extends WP_Widget {
 
 		$cal = CRM_Event_BAO_Event::getCompleteInfo();
 		$index = 0;
+		$divider = ( isset($instance['divider'] ) ) ? $instance['divider'] : ', ';
 		$content .= '<div class="civievent-widget-list">';
 		foreach ( $cal as $event ) {
 			$start = CRM_Utils_Array::value( 'start_date', $event );
@@ -105,12 +106,14 @@ class civievent_Widget extends WP_Widget {
 			if ( $instance['city'] || $instance['state'] || $instance['country'] ) {
 				$location = $this->locationInfo( $event['event_id'], $instance['city'], $instance['state'], $instance['country'] );
 				$lprint = array();
+				$prevLvalue = null;
 				foreach ( $location as $lfield => $lvalue ) {
-					if ( ! empty( $lvalue ) ) {
+					if ( ! empty( $lvalue ) && $prevLvalue !== $lvalue ) {
 						$lprint[] = '<span class="civievent-widget-location-' . $lfield . '">' . $lvalue . '</span>';
+						$prevLvalue = $lvalue;
 					}
 				}
-				$location = ' <span class="civievent-widget-location">' . implode( ', ', $lprint ) . '</span> ';
+				$location = ' <span class="civievent-widget-location">' . implode( $divider, $lprint ) . '</span> ';
 			}
 			$row = '';
 			if ( $start ) {
@@ -181,43 +184,47 @@ class civievent_Widget extends WP_Widget {
 	 */
 	public function form( $instance ) {
 		if ( ! function_exists( 'civicrm_initialize' ) ) { ?>
-			<h3>You must enable and install CiviCRM to use this plugin.</h3>
+			<h3><?php _e( 'You must enable and install CiviCRM to use this plugin.', 'civievent-widget' ); ?></h3>
 			<?php
 			return;
 		} elseif ( version_compare( $this->_civiversion, '4.3.alpha1' ) < 0 ) { ?>
-			<h3>You must enable and install CiviCRM 4.3 or higher to use this plugin.	You are currently running CiviCRM <?php print $this->_civiversion; ?></h3>
+			<h3><?php print __( 'You must enable and install CiviCRM 4.3 or higher to use this plugin.	You are currently running CiviCRM ', 'civievent-widget' ) . $this->_civiversion; ?></h3>
 			<?php
 			return;
 		} elseif ( strlen( $this->_civiBasePage ) < 1 ) {
 			$adminUrl = CRM_Utils_System::url( 'civicrm/admin/setting/uf', 'reset=1' );
 			?><div class="civievent-widget-nobasepage">
-				<h3>No Base Page Set</h3>
-				<p>You do not have a WordPress Base Page set in your CiviCRM settings.  This can cause the CiviEvent Widget to display inconsistent links.  <a href='<?php print $adminUrl; ?>'>Please set this</a> before using the widget.
+				<h3><?php _e( 'No Base Page Set', 'civievent-widget' ); ?></h3>
+				<?php
+				print '<p>' . __( 'You do not have a WordPress Base Page set in your CiviCRM settings.  This can cause the CiviEvent Widget to display inconsistent links.', 'civievent-widget' );
+				print '<a href=' . $adminUrl . '>' . __( 'Please set this', 'civievent-widget' ) . '</a> ' . __( 'before using the widget.', 'civievent-widget' ) . '</p>';
+				?>
 			</div><?php
 		}
 
 		// Outputs the options form on admin.
-		$title = isset( $instance['title'] ) ? $instance['title'] : __( 'Upcoming Events', 'text_domain' );
-		$wtheme = isset( $instance['wtheme'] ) ? $instance['wtheme'] : __( 'stripe', 'text_domain' );
-		$limit = isset( $instance['limit'] ) ? $instance['limit'] : __( 5, 'text_domain' );
+		$title = isset( $instance['title'] ) ? $instance['title'] : __( 'Upcoming Events', 'civievent-widget' );
+		$wtheme = isset( $instance['wtheme'] ) ? $instance['wtheme'] : __( 'stripe', 'civievent-widget' );
+		$limit = isset( $instance['limit'] ) ? $instance['limit'] : __( 5, 'civievent-widget' );
 		$summary = isset( $instance['summary'] ) ? (bool) $instance['summary'] : false;
 		$alllink = isset( $instance['alllink'] ) ? (bool) $instance['alllink'] : false;
 		$city = isset( $instance['city'] ) ? (bool) $instance['city'] : false;
 		$state = isset($instance['state']) ? $instance['state'] : 'none';
 		$country = isset( $instance['country'] ) ? (bool) $instance['country'] : false;
+		$divider = isset( $instance['divider'] ) ? $instance['divider'] : ', ';
 
 		?>
 		<p>
-		<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label>
+		<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:', 'civievent-widget' ); ?></label>
 		<input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $title ); ?>" />
 		</p>
 		<p>
-		<label for="<?php echo $this->get_field_id( 'wtheme' ); ?>"><?php _e( 'Widget theme:' ); ?></label>
+		<label for="<?php echo $this->get_field_id( 'wtheme' ); ?>"><?php _e( 'Widget theme:', 'civievent-widget' ); ?></label>
 		<input class="widefat" id="<?php echo $this->get_field_id( 'wtheme' ); ?>" name="<?php echo $this->get_field_name( 'wtheme' ); ?>" type="text" value="<?php echo esc_attr( $wtheme ); ?>" />
-		Enter the theme for the widget.	Standard options are "stripe" and "divider", or you can enter your own value, which will be added to the widget class name.
+		<?php _e( 'Enter the theme for the widget.	Standard options are "stripe" and "divider", or you can enter your own value, which will be added to the widget class name.', 'civievent-widget' ); ?>
 		</p>
 		<p>
-		<label for="<?php echo $this->get_field_id( 'limit' ); ?>"><?php _e( 'Limit:' ); ?></label>
+		<label for="<?php echo $this->get_field_id( 'limit' ); ?>"><?php _e( 'Limit:', 'civievent-widget' ); ?></label>
 		<input class="widefat" id="<?php echo $this->get_field_id( 'limit' ); ?>" name="<?php echo $this->get_field_name( 'limit' ); ?>" type="text" value="<?php echo esc_attr( $limit ); ?>" />
 		</p>
 		<p><input type="checkbox" <?php checked( $city ); ?> name="<?php echo $this->get_field_name( 'city' ); ?>" id="<?php echo $this->get_field_id( 'city' ); ?>" class="checkbox">
@@ -226,19 +233,24 @@ class civievent_Widget extends WP_Widget {
 		<p>
 		<label for="<?php echo $this->get_field_id( 'state' ); ?>">Display state/province?</label>
 			<select name="<?php echo $this->get_field_name( 'state' ); ?>" id="<?php echo $this->get_field_id( 'state' ); ?>">
-				<option value="none" <?php selected( $state, 'none' ); ?>>Hidden</option>
-				<option value="abbreviate" <?php selected( $state, 'abbreviate' ); ?>>Abbreviations</option>
-				<option value="full" <?php selected( $state, 'full' ); ?>>Full names</option>
+				<option value="none" <?php selected( $state, 'none' ); ?>><?php _e( 'Hidden', 'civievent-widget' ); ?></option>
+				<option value="abbreviate" <?php selected( $state, 'abbreviate' ); ?>><?php _e( 'Abbreviations', 'civievent-widget' ); ?></option>
+				<option value="full" <?php selected( $state, 'full' ); ?>><?php _e( 'Full names', 'civievent-widget' ); ?></option>
 			</select>
 		</p>
 		<p><input type="checkbox" <?php checked( $country ); ?> name="<?php echo $this->get_field_name( 'country' ); ?>" id="<?php echo $this->get_field_id( 'country' ); ?>" class="checkbox">
-		<label for="<?php echo $this->get_field_id( 'country' ); ?>">Display country?</label>
+		<label for="<?php echo $this->get_field_id( 'country' ); ?>"><?php _e( 'Display country?', 'civievent-widget' ); ?></label>
+		</p>
+		<p>
+		<label for="<?php echo $this->get_field_id( 'divider' ); ?>"><?php _e( 'City, state, country divider:', 'civievent-widget' ); ?></label>
+		<input class="widefat" id="<?php echo $this->get_field_id( 'divider' ); ?>" name="<?php echo $this->get_field_name( 'divider' ); ?>" type="text" value="<?php echo esc_attr( $divider ); ?>" />
+		<?php _e( 'Enter the character(s) that should separate the city, state/province, and/or country when displayed.', 'civievent-widget' ); ?>
 		</p>
 		<p><input type="checkbox" <?php checked( $summary ); ?> name="<?php echo $this->get_field_name( 'summary' ); ?>" id="<?php echo $this->get_field_id( 'summary' ); ?>" class="checkbox">
-		<label for="<?php echo $this->get_field_id( 'summary' ); ?>">Display summary?</label>
+		<label for="<?php echo $this->get_field_id( 'summary' ); ?>"><?php _e( 'Display summary?', 'civievent-widget' ); ?></label>
 		</p>
 		<p><input type="checkbox" <?php checked( $alllink ); ?> name="<?php echo $this->get_field_name( 'alllink' ); ?>" id="<?php echo $this->get_field_id( 'alllink' ); ?>" class="checkbox">
-		<label for="<?php echo $this->get_field_id( 'alllink' ); ?>">Display "view all"?</label>
+		<label for="<?php echo $this->get_field_id( 'alllink' ); ?>"><?php _e( 'Display "view all"?', 'civievent-widget' ); ?></label>
 		</p>
 		<?php
 	}
@@ -264,6 +276,7 @@ class civievent_Widget extends WP_Widget {
 		$instance['state'] = ( 'none' === $new_instance['state'] ) ? null : $new_instance['state'];
 		$instance['country'] = isset( $new_instance['country'] ) ? (bool) $new_instance['country'] : false;
 		$instance['alllink'] = isset( $new_instance['alllink'] ) ? (bool) $new_instance['alllink'] : false;
+		if ( isset( $new_instance['divider'] ) ) { $instance['divider'] = $new_instance['divider']; }
 
 		return $instance;
 	}
