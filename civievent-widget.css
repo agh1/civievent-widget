@@ -90,3 +90,7 @@
 .civievent-widget-stripe .civievent-widget-event-end-time {
   display: inline-block;
 }
+
+.civievent-widget-location {
+  display: block;
+}

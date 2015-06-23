@@ -3,7 +3,7 @@
 Plugin Name: CiviEvent Widget
 Plugin URI: http://www.aghstrategies.com/civievent-widget
 Description: The CiviEvent Widget plugin displays public CiviCRM events in a widget.
-Version: 0.4
+Version: 1.0
 Author: AGH Strategies, LLC
 Author URI: http://aghstrategies.com/
 */
@@ -37,11 +37,18 @@ add_action( 'widgets_init', function() {
 class civievent_Widget extends WP_Widget {
 
 	/**
-	 * Version of civiCRM (to warn those with old versions).
+	 * Version of CiviCRM (to warn those with old versions).
 	 *
 	 * @var string $_civiversion Version of CiviCRM
 	 */
 	private $_civiversion = null;
+
+	/**
+	 * CiviCRM basepage for Wordpress
+	 *
+	 * @var string $_civiBasePage Path of base page
+	 */
+	private $_civiBasePage = null;
 
 	/**
 	 * Construct the basic widget object.
@@ -58,6 +65,7 @@ class civievent_Widget extends WP_Widget {
 
 		require_once 'CRM/Utils/System.php';
 		$this->_civiversion = CRM_Utils_System::version();
+		$this->_civiBasePage = CRM_Core_BAO_Setting::getItem( CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'wpBasePage' );
 	}
 
 	/**
@@ -93,6 +101,17 @@ class civievent_Widget extends WP_Widget {
 			$url = CRM_Utils_Array::value( 'url', $event );
 			$title = CRM_Utils_Array::value( 'title', $event );
 			$summary = CRM_Utils_Array::value( 'summary', $event, '' );
+			$location = '';
+			if ( $instance['city'] || $instance['state'] || $instance['country'] ) {
+				$location = $this->locationInfo( $event['event_id'], $instance['city'], $instance['state'], $instance['country'] );
+				$lprint = array();
+				foreach ( $location as $lfield => $lvalue ) {
+					if ( ! empty( $lvalue ) ) {
+						$lprint[] = '<span class="civievent-widget-location-' . $lfield . '">' . $lvalue . '</span>';
+					}
+				}
+				$location = ' <span class="civievent-widget-location">' . implode( ', ', $lprint ) . '</span> ';
+			}
 			$row = '';
 			if ( $start ) {
 				$date = '<span class="civievent-widget-event-start-date">' . CRM_Utils_Date::customFormat( $start, $date_format ) . '</span>';
@@ -108,6 +127,7 @@ class civievent_Widget extends WP_Widget {
 			}
 			if ( $title ) {
 				$row .= ' <span class="civievent-widget-event-title">';
+				$row .= $location;
 				$row .= '<span class="civievent-widget-infolink">';
 				$row .= ($url) ? "<a href=\"$url\">$title</a>" : $title;
 				$row .= '</span>';
@@ -168,6 +188,12 @@ class civievent_Widget extends WP_Widget {
 			<h3>You must enable and install CiviCRM 4.3 or higher to use this plugin.	You are currently running CiviCRM <?php print $this->_civiversion; ?></h3>
 			<?php
 			return;
+		} elseif ( strlen( $this->_civiBasePage ) < 1 ) {
+			$adminUrl = CRM_Utils_System::url( 'civicrm/admin/setting/uf', 'reset=1' );
+			?><div class="civievent-widget-nobasepage">
+				<h3>No Base Page Set</h3>
+				<p>You do not have a WordPress Base Page set in your CiviCRM settings.  This can cause the CiviEvent Widget to display inconsistent links.  <a href='<?php print $adminUrl; ?>'>Please set this</a> before using the widget.
+			</div><?php
 		}
 
 		// Outputs the options form on admin.
@@ -176,6 +202,9 @@ class civievent_Widget extends WP_Widget {
 		$limit = isset( $instance['limit'] ) ? $instance['limit'] : __( 5, 'text_domain' );
 		$summary = isset( $instance['summary'] ) ? (bool) $instance['summary'] : false;
 		$alllink = isset( $instance['alllink'] ) ? (bool) $instance['alllink'] : false;
+		$city = isset( $instance['city'] ) ? (bool) $instance['city'] : false;
+		$state = isset($instance['state']) ? $instance['state'] : 'none';
+		$country = isset( $instance['country'] ) ? (bool) $instance['country'] : false;
 
 		?>
 		<p>
@@ -191,6 +220,20 @@ class civievent_Widget extends WP_Widget {
 		<label for="<?php echo $this->get_field_id( 'limit' ); ?>"><?php _e( 'Limit:' ); ?></label>
 		<input class="widefat" id="<?php echo $this->get_field_id( 'limit' ); ?>" name="<?php echo $this->get_field_name( 'limit' ); ?>" type="text" value="<?php echo esc_attr( $limit ); ?>" />
 		</p>
+		<p><input type="checkbox" <?php checked( $city ); ?> name="<?php echo $this->get_field_name( 'city' ); ?>" id="<?php echo $this->get_field_id( 'city' ); ?>" class="checkbox">
+		<label for="<?php echo $this->get_field_id( 'city' ); ?>">Display city?</label>
+		</p>
+		<p>
+		<label for="<?php echo $this->get_field_id( 'state' ); ?>">Display state/province?</label>
+			<select name="<?php echo $this->get_field_name( 'state' ); ?>" id="<?php echo $this->get_field_id( 'state' ); ?>">
+				<option value="none" <?php selected( $state, 'none' ); ?>>Hidden</option>
+				<option value="abbreviate" <?php selected( $state, 'abbreviate' ); ?>>Abbreviations</option>
+				<option value="full" <?php selected( $state, 'full' ); ?>>Full names</option>
+			</select>
+		</p>
+		<p><input type="checkbox" <?php checked( $country ); ?> name="<?php echo $this->get_field_name( 'country' ); ?>" id="<?php echo $this->get_field_id( 'country' ); ?>" class="checkbox">
+		<label for="<?php echo $this->get_field_id( 'country' ); ?>">Display country?</label>
+		</p>
 		<p><input type="checkbox" <?php checked( $summary ); ?> name="<?php echo $this->get_field_name( 'summary' ); ?>" id="<?php echo $this->get_field_id( 'summary' ); ?>" class="checkbox">
 		<label for="<?php echo $this->get_field_id( 'summary' ); ?>">Display summary?</label>
 		</p>
@@ -201,7 +244,7 @@ class civievent_Widget extends WP_Widget {
 	}
 
 	/**
-	 * Widget config form.
+	 * Widget update function.
 	 *
 	 * @param array $new_instance The widget instance to be saved.
 	 * @param array $old_instance The widget instance prior to update.
@@ -217,8 +260,52 @@ class civievent_Widget extends WP_Widget {
 		}
 		$instance['limit'] = ( ! empty( $new_instance['limit'] ) ) ? intval( strip_tags( $new_instance['limit'] ) ) : 5;
 		$instance['summary'] = isset( $new_instance['summary'] ) ? (bool) $new_instance['summary'] : false;
+		$instance['city'] = isset( $new_instance['city'] ) ? (bool) $new_instance['city'] : false;
+		$instance['state'] = ( 'none' === $new_instance['state'] ) ? null : $new_instance['state'];
+		$instance['country'] = isset( $new_instance['country'] ) ? (bool) $new_instance['country'] : false;
 		$instance['alllink'] = isset( $new_instance['alllink'] ) ? (bool) $new_instance['alllink'] : false;
 
 		return $instance;
+	}
+
+	/**
+	 * Retrieve event location information.
+	 *
+	 * @param integer $eventId The ID of the event.
+	 * @param boolean $city Return city.
+	 * @param string  $state How to return state (abbreviate or full).
+	 * @param boolean $country Return country.
+	 */
+	public function locationInfo($eventId, $city = true, $state = null, $country = false) {
+		$result = civicrm_api('Event', 'getsingle', array(
+			'version' => 3,
+			'id' => $eventId,
+			'is_show_location' => 1,
+			'return' => 'loc_block_id',
+			'api.LocBlock.getsingle' => array(
+				'id' => '$value.loc_block_id',
+				'api.Address.getsingle' => array( 'id' => '$value.address_id' ),
+			),
+		));
+
+		if ($result['is_error']) {
+			return array();
+		}
+
+		$return = array();
+		$loc = CRM_Utils_Array::value( 'api.Address.getsingle', CRM_Utils_Array::value( 'api.LocBlock.getsingle', $result, array() ), array() );
+		if ( $city ) {
+			$return['city'] = CRM_Utils_Array::value( 'city', $loc );
+		}
+		if ( $state ) {
+			$abbreviate = ( 'abbreviate' === $state ) ? 'abbreviate' : null;
+			$states = CRM_Core_BAO_Address::buildOptions( 'state_province_id', $abbreviate, array( 'country_id' => CRM_Utils_Array::value( 'country_id', $loc ) ) );
+			$return['state'] = CRM_Utils_Array::value( CRM_Utils_Array::value( 'state_province_id', $loc ), $states );
+		}
+		if ( $country ) {
+			$countries = CRM_Core_BAO_Address::buildOptions( 'country_id', 'get' );
+			$return['country'] = CRM_Utils_Array::value( CRM_Utils_Array::value( 'country_id', $loc ), $countries );
+		}
+		return $return;
 	}
 }
