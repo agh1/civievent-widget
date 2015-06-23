@@ -34,4 +34,3 @@ Read more at http://aghstrategies.com/civievent-widget
 
 = 0.1 =
 * Initial version
-
