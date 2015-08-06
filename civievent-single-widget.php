@@ -48,10 +48,6 @@ class civievent_single_Widget extends civievent_Widget {
 
 		if ( version_compare( $this->_civiversion, '4.3.alpha1' ) < 0 ) { return; }
 
-		// Outputs the content of the widget.
-		$title = apply_filters( 'widget_title', $instance['title'] );
-		$content = $title ? "<h3 class=\"title widget-title civievent-single-widget-title\">$title</h2>" : '';
-
 		try {
 			$event = civicrm_api3( 'Event', 'getsingle', array(
 				'sequential' => 1,
@@ -60,7 +56,7 @@ class civievent_single_Widget extends civievent_Widget {
 				'is_template' => 0,
 				'options' => array(
 					'limit' => 1,
-					'sort' => 'start_date DESC',
+					'sort' => 'start_date ASC',
 					'offset' => CRM_Utils_Array::value( 'offset', $instance, 0 ),
 				),
 				'start_date' => array( '>=' => date( 'Y-m-d' ) ),
@@ -70,9 +66,17 @@ class civievent_single_Widget extends civievent_Widget {
 		}
 
 		if ( isset( $event['title'] ) ) {
+			// Outputs the content of the widget.
 			$infoLink = CRM_Utils_System::url( 'civicrm/event/info', "reset=1&id={$event['id']}" );
-			$content .= '<div class="civievent-widget-single-title"><a href="' . $infoLink . '">';
-			$content .= $event['title'] . '</a></div>';
+			if ( empty( $instance['title'] ) ) {
+				$title = apply_filters( 'widget_title', $event['title'] );
+				$content = "<h3 class=\"title widget-title civievent-single-widget-title\"><a href=\"$infoLink\">$title</a></h3>";
+			} else {
+				$title = apply_filters( 'widget_title', $instance['title'] );
+				$content = "<h3 class=\"title widget-title civievent-single-widget-title\">$title</h3>";
+				$content .= '<div class="civievent-widget-single-title"><a href="' . $infoLink . '">';
+				$content .= $event['title'] . '</a></div>';
+			}
 
 			if ( ! empty($event['summary'] ) ) {
 				$content .= "<div class=\"civievent-widget-single-summary\">{$event['summary']}</div>";
@@ -85,8 +89,6 @@ class civievent_single_Widget extends civievent_Widget {
 				$viewall = CRM_Utils_System::url( 'civicrm/event/ical', 'reset=1&list=1&html=1' );
 				$content .= "<div class=\"civievent-widget-single-viewall\"><a href=\"$viewall\">" . ts( 'View all' ) . '</a></div>';
 			}
-
-			$content .= '</div>';
 		}
 		$classes = array(
 			'widget',
@@ -128,23 +130,30 @@ class civievent_single_Widget extends civievent_Widget {
 		}
 
 		// Outputs the options form on admin.
-		$title = isset( $instance['title'] ) ? $instance['title'] : __( 'Next Event', 'civievent-widget' );
-		$wtheme = isset( $instance['wtheme'] ) ? $instance['wtheme'] : __( 'standard', 'civievent-widget' );
+		$title = isset( $instance['title'] ) ? $instance['title'] : '';
+		$wtheme = isset( $instance['wtheme'] ) ? $instance['wtheme'] : 'standard';
 		$alllink = isset( $instance['alllink'] ) ? (bool) $instance['alllink'] : false;
 		$city = isset( $instance['city'] ) ? (bool) $instance['city'] : false;
 		$state = isset($instance['state']) ? $instance['state'] : 'none';
 		$country = isset( $instance['country'] ) ? (bool) $instance['country'] : false;
 		$divider = isset( $instance['divider'] ) ? $instance['divider'] : ', ';
+		$offset = isset( $instance['offset'] ) ? $instance['offset'] : 0;
 
 		?>
 		<p>
 		<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:', 'civievent-widget' ); ?></label>
 		<input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $title ); ?>" />
+		<?php _e( 'Enter the title for the widget.	You may leave this blank to set the event\'s title as the widget title', 'civievent-widget' ); ?>
 		</p>
 		<p>
 		<label for="<?php echo $this->get_field_id( 'wtheme' ); ?>"><?php _e( 'Widget theme:', 'civievent-widget' ); ?></label>
 		<input class="widefat" id="<?php echo $this->get_field_id( 'wtheme' ); ?>" name="<?php echo $this->get_field_name( 'wtheme' ); ?>" type="text" value="<?php echo esc_attr( $wtheme ); ?>" />
-		<?php _e( 'Enter the theme for the widget.	Standard options are "stripe" and "divider", or you can enter your own value, which will be added to the widget class name.', 'civievent-widget' ); ?>
+		<?php _e( 'Enter the theme for the widget.	The standard option is "standard", or you can enter your own value, which will be added to the widget class name.', 'civievent-widget' ); ?>
+		</p>
+		<p>
+		<label for="<?php echo $this->get_field_id( 'offset' ); ?>"><?php _e( 'Offset:', 'civievent-widget' ); ?></label>
+		<input class="widefat" id="<?php echo $this->get_field_id( 'offset' ); ?>" name="<?php echo $this->get_field_name( 'offset' ); ?>" type="text" value="<?php echo esc_attr( $offset ); ?>" />
+		<?php _e( 'By default, the widget will show the first upcoming event starting today or in the future.  Enter an offset to skip one or more events: for example, an offset of 1 will skip the first event and display the second.', 'civievent-widget' ); ?>
 		</p>
 		<p><input type="checkbox" <?php checked( $city ); ?> name="<?php echo $this->get_field_name( 'city' ); ?>" id="<?php echo $this->get_field_id( 'city' ); ?>" class="checkbox">
 		<label for="<?php echo $this->get_field_id( 'city' ); ?>"><?php _e( 'Display city?', 'civievent-widget' ); ?></label>

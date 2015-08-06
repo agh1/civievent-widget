@@ -113,7 +113,7 @@ class civievent_Widget extends WP_Widget {
 
 		// Outputs the content of the widget.
 		$title = apply_filters( 'widget_title', $instance['title'] );
-		$content = $title ? "<h3 class=\"title widget-title civievent-widget-title\">$title</h2>" : '';
+		$content = $title ? "<h3 class=\"title widget-title civievent-widget-title\">$title</h3>" : '';
 
 		$cal = CRM_Event_BAO_Event::getCompleteInfo();
 		$index = 0;
@@ -191,7 +191,7 @@ class civievent_Widget extends WP_Widget {
 
 		// Outputs the options form on admin.
 		$title = isset( $instance['title'] ) ? $instance['title'] : __( 'Upcoming Events', 'civievent-widget' );
-		$wtheme = isset( $instance['wtheme'] ) ? $instance['wtheme'] : __( 'stripe', 'civievent-widget' );
+		$wtheme = isset( $instance['wtheme'] ) ? $instance['wtheme'] : 'stripe';
 		$limit = isset( $instance['limit'] ) ? $instance['limit'] : __( 5, 'civievent-widget' );
 		$summary = isset( $instance['summary'] ) ? (bool) $instance['summary'] : false;
 		$alllink = isset( $instance['alllink'] ) ? (bool) $instance['alllink'] : false;
@@ -264,6 +264,7 @@ class civievent_Widget extends WP_Widget {
 		$instance['country'] = isset( $new_instance['country'] ) ? (bool) $new_instance['country'] : false;
 		$instance['alllink'] = isset( $new_instance['alllink'] ) ? (bool) $new_instance['alllink'] : false;
 		if ( isset( $new_instance['divider'] ) ) { $instance['divider'] = $new_instance['divider']; }
+		$instance['offset'] = ( ! empty( $new_instance['offset'] ) ) ? intval( strip_tags( $new_instance['offset'] ) ) : 0;
 
 		return $instance;
 	}
