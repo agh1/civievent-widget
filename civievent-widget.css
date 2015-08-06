@@ -41,6 +41,7 @@
   vertical-align: top;
 }
 
+.civievent-widget-single-standard .civievent-widget-single-viewall,
 .civievent-widget-divider .civievent-widget-viewall,
 .civievent-widget-stripe .civievent-widget-viewall {
   text-align: right;
@@ -50,12 +51,14 @@
   padding: 1ex;
 }
 
+.civievent-widget-single-standard .civievent-widget-single-reglink,
 .civievent-widget-divider .civievent-widget-reglink,
 .civievent-widget-stripe .civievent-widget-reglink {
   display: block;
   padding: .5em 0 0;
 }
 
+.civievent-widget-single-standard .civievent-widget-single-reglink a,
 .civievent-widget-divider .civievent-widget-reglink a,
 .civievent-widget-stripe .civievent-widget-reglink a {
   display: inline-block;
@@ -71,7 +74,8 @@
   width: 50%;
 }
 
-.civievent-widget-event-summary {
+.civievent-widget-event-summary,
+.civievent-widget-single-summary {
   display: block;
 }
 
@@ -91,6 +95,8 @@
   display: inline-block;
 }
 
+.civievent-widget-single-datetime,
+.civievent-widget-single-location,
 .civievent-widget-location {
   display: block;
 }
