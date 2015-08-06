@@ -3,7 +3,7 @@
 Plugin Name: CiviEvent Widget
 Plugin URI: http://www.aghstrategies.com/civievent-widget
 Description: The CiviEvent Widget plugin displays public CiviCRM events in a widget.
-Version: 1.1
+Version: 1.2
 Author: AGH Strategies, LLC
 Author URI: http://aghstrategies.com/
 */
@@ -74,7 +74,7 @@ class civievent_Widget extends WP_Widget {
 		// Widget actual processes.
 		parent::__construct(
 			'civievent-widget', // Base ID
-			__( 'CiviEvent Widget', 'civievent-widget' ), // Name
+			__( 'CiviEvent List Widget', 'civievent-widget' ), // Name
 			array( 'description' => __( 'displays public CiviCRM events', 'civievent-widget' ) ) // Args.
 		);
 
@@ -192,7 +192,7 @@ class civievent_Widget extends WP_Widget {
 		// Outputs the options form on admin.
 		$title = isset( $instance['title'] ) ? $instance['title'] : __( 'Upcoming Events', 'civievent-widget' );
 		$wtheme = isset( $instance['wtheme'] ) ? $instance['wtheme'] : 'stripe';
-		$limit = isset( $instance['limit'] ) ? $instance['limit'] : __( 5, 'civievent-widget' );
+		$limit = isset( $instance['limit'] ) ? $instance['limit'] : 5;
 		$summary = isset( $instance['summary'] ) ? (bool) $instance['summary'] : false;
 		$alllink = isset( $instance['alllink'] ) ? (bool) $instance['alllink'] : false;
 		$city = isset( $instance['city'] ) ? (bool) $instance['city'] : false;
@@ -289,7 +289,7 @@ class civievent_Widget extends WP_Widget {
 			),
 		));
 
-		if ($result['is_error']) {
+		if ( $result['is_error'] ) {
 			return array();
 		}
 
@@ -310,6 +310,12 @@ class civievent_Widget extends WP_Widget {
 		return $return;
 	}
 
+	/**
+	 * Prepare event date display.
+	 *
+	 * @param array  $event The event details.
+	 * @param string $classPrefix The beginning of the classname for the elements.
+	 */
 	public function dateFix( $event, $classPrefix ) {
 		$start = CRM_Utils_Array::value( 'start_date', $event );
 		$end = CRM_Utils_Array::value( 'end_date', $event );
@@ -327,6 +333,14 @@ class civievent_Widget extends WP_Widget {
 		}
 	}
 
+	/**
+	 * Prepare event location display.
+	 *
+	 * @param array   $event The event details.
+	 * @param integer $id The event id.
+	 * @param array   $instance The widget instance.
+	 * @param string  $classPrefix The beginning of the classname for the elements.
+	 */
 	public function locFix( $event, $id, $instance, $classPrefix ) {
 		$location = '';
 		$divider = ( isset($instance['divider'] ) ) ? $instance['divider'] : ', ';
@@ -346,6 +360,13 @@ class civievent_Widget extends WP_Widget {
 		return $location;
 	}
 
+	/**
+	 * Prepare registration link display.
+	 *
+	 * @param array   $event The event details.
+	 * @param integer $id The event id.
+	 * @param string  $classPrefix The beginning of the classname for the elements.
+	 */
 	public function regFix( $event, $id, $classPrefix ) {
 		$reg = '';
 		if ( CRM_Utils_Array::value( 'is_online_registration', $event )
