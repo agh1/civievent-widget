@@ -35,6 +35,10 @@ Read more at http://aghstrategies.com/civievent-widget
 
 == Changelog ==
 
+= 1.3 =
+* Cleanup for PHP strict notices
+* Compatibility for WordPress 4.3
+
 = 1.2 =
 * New single event widget for displaying the next upcoming event
 * Offset the single event widget to display the second or third upcoming event
