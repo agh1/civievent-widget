@@ -86,18 +86,18 @@ class civievent_Widget extends WP_Widget {
 		civicrm_initialize();
 
 		require_once 'CRM/Utils/System.php';
-		$this->_civiversion = CRM_Utils_System::version();
-		$this->_civiBasePage = CRM_Core_BAO_Setting::getItem( CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'wpBasePage' );
+		self::$_civiversion = CRM_Utils_System::version();
+		self::$_civiBasePage = CRM_Core_BAO_Setting::getItem( CRM_Core_BAO_Setting::SYSTEM_PREFERENCES_NAME, 'wpBasePage' );
 
 		// Get date and time formats.
 		$params = array( 'name' => 'date_format' );
 		$values = array();
 		CRM_Core_DAO::commonRetrieve( 'CRM_Core_DAO_PreferencesDate', $params, $values );
-		$this->_dateFormat = ( $values['date_format'] ) ? $values['date_format'] : '%b %E, %Y';
+		self::$_dateFormat = ( $values['date_format'] ) ? $values['date_format'] : '%b %E, %Y';
 		$params = array( 'name' => 'time_format' );
 		$values = array();
 		CRM_Core_DAO::commonRetrieve( 'CRM_Core_DAO_PreferencesDate', $params, $values );
-		$this->_timeFormat = ($values['time_format']) ? $values['time_format'] : '%l:%M %p';
+		self::$_timeFormat = ($values['time_format']) ? $values['time_format'] : '%l:%M %p';
 	}
 
 	/**
@@ -109,7 +109,7 @@ class civievent_Widget extends WP_Widget {
 	public function widget( $args, $instance ) {
 		if ( ! function_exists( 'civicrm_initialize' ) ) { return; }
 
-		if ( version_compare( $this->_civiversion, '4.3.alpha1' ) < 0 ) { return; }
+		if ( version_compare( self::$_civiversion, '4.3.alpha1' ) < 0 ) { return; }
 
 		// Outputs the content of the widget.
 		$title = apply_filters( 'widget_title', $instance['title'] );
@@ -174,11 +174,11 @@ class civievent_Widget extends WP_Widget {
 			<h3><?php _e( 'You must enable and install CiviCRM to use this plugin.', 'civievent-widget' ); ?></h3>
 			<?php
 			return;
-		} elseif ( version_compare( $this->_civiversion, '4.3.alpha1' ) < 0 ) { ?>
+		} elseif ( version_compare( self::$_civiversion, '4.3.alpha1' ) < 0 ) { ?>
 			<h3><?php print __( 'You must enable and install CiviCRM 4.3 or higher to use this plugin.	You are currently running CiviCRM ', 'civievent-widget' ) . $this->_civiversion; ?></h3>
 			<?php
 			return;
-		} elseif ( strlen( $this->_civiBasePage ) < 1 ) {
+		} elseif ( strlen( self::$_civiBasePage ) < 1 ) {
 			$adminUrl = CRM_Utils_System::url( 'civicrm/admin/setting/uf', 'reset=1' );
 			?><div class="civievent-widget-nobasepage">
 				<h3><?php _e( 'No Base Page Set', 'civievent-widget' ); ?></h3>
@@ -320,14 +320,14 @@ class civievent_Widget extends WP_Widget {
 		$start = CRM_Utils_Array::value( 'start_date', $event );
 		$end = CRM_Utils_Array::value( 'end_date', $event );
 		if ( $start ) {
-			$date = '<span class="' . $classPrefix . '-start-date">' . CRM_Utils_Date::customFormat( $start, $this->_dateFormat ) . '</span>';
-			$date .= ' <span class="' . $classPrefix . '-start-time">' . CRM_Utils_Date::customFormat( $start, $this->_timeFormat ) . '</span>';
+			$date = '<span class="' . $classPrefix . '-start-date">' . CRM_Utils_Date::customFormat( $start, self::$_dateFormat ) . '</span>';
+			$date .= ' <span class="' . $classPrefix . '-start-time">' . CRM_Utils_Date::customFormat( $start, self::$_timeFormat ) . '</span>';
 			if ( $end ) {
 				$date .= ' &ndash;';
-				if ( CRM_Utils_Date::customFormat( $end, $this->_dateFormat ) !== CRM_Utils_Date::customFormat( $start, $this->_dateFormat ) ) {
-					$date .= ' <span class="' . $classPrefix . '-end-date">' . CRM_Utils_Date::customFormat( $end, $this->_dateFormat ) . '</span>';
+				if ( CRM_Utils_Date::customFormat( $end, self::$_dateFormat ) !== CRM_Utils_Date::customFormat( $start, self::$_dateFormat ) ) {
+					$date .= ' <span class="' . $classPrefix . '-end-date">' . CRM_Utils_Date::customFormat( $end, self::$_dateFormat ) . '</span>';
 				}
-				$date .= ' <span class="' . $classPrefix . '-end-time">' . CRM_Utils_Date::customFormat( $end, $this->_timeFormat ) . '</span>';
+				$date .= ' <span class="' . $classPrefix . '-end-time">' . CRM_Utils_Date::customFormat( $end, self::$_timeFormat ) . '</span>';
 			}
 			return "<span class=\"$classPrefix-datetime\">$date</span>";
 		}
