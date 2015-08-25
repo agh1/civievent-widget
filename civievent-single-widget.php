@@ -46,7 +46,7 @@ class civievent_single_Widget extends civievent_Widget {
 	public function widget( $args, $instance ) {
 		if ( ! function_exists( 'civicrm_initialize' ) ) { return; }
 
-		if ( version_compare( $this->_civiversion, '4.3.alpha1' ) < 0 ) { return; }
+		if ( version_compare( self::$_civiversion, '4.3.alpha1' ) < 0 ) { return; }
 
 		try {
 			$event = civicrm_api3( 'Event', 'getsingle', array(
@@ -114,11 +114,11 @@ class civievent_single_Widget extends civievent_Widget {
 			<h3><?php _e( 'You must enable and install CiviCRM to use this plugin.', 'civievent-widget' ); ?></h3>
 			<?php
 			return;
-		} elseif ( version_compare( $this->_civiversion, '4.3.alpha1' ) < 0 ) { ?>
-			<h3><?php print __( 'You must enable and install CiviCRM 4.3 or higher to use this plugin.	You are currently running CiviCRM ', 'civievent-widget' ) . $this->_civiversion; ?></h3>
+		} elseif ( version_compare( self::$_civiversion, '4.3.alpha1' ) < 0 ) { ?>
+			<h3><?php print __( 'You must enable and install CiviCRM 4.3 or higher to use this plugin.	You are currently running CiviCRM ', 'civievent-widget' ) . self::$_civiversion; ?></h3>
 			<?php
 			return;
-		} elseif ( strlen( $this->_civiBasePage ) < 1 ) {
+		} elseif ( strlen( self::$_civiBasePage ) < 1 ) {
 			$adminUrl = CRM_Utils_System::url( 'civicrm/admin/setting/uf', 'reset=1' );
 			?><div class="civievent-widget-nobasepage">
 				<h3><?php _e( 'No Base Page Set', 'civievent-widget' ); ?></h3>
