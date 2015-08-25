@@ -93,11 +93,11 @@ class civievent_Widget extends WP_Widget {
 		$params = array( 'name' => 'date_format' );
 		$values = array();
 		CRM_Core_DAO::commonRetrieve( 'CRM_Core_DAO_PreferencesDate', $params, $values );
-		self::$_dateFormat = ( $values['date_format'] ) ? $values['date_format'] : '%b %E, %Y';
+		self::$_dateFormat = CRM_Utils_Array::value( 'date_format', $values, '%b %E, %Y' );
 		$params = array( 'name' => 'time_format' );
 		$values = array();
 		CRM_Core_DAO::commonRetrieve( 'CRM_Core_DAO_PreferencesDate', $params, $values );
-		self::$_timeFormat = ($values['time_format']) ? $values['time_format'] : '%l:%M %p';
+		self::$_timeFormat = CRM_Utils_Array::value( 'time_format', $values, '%l:%M %p' );
 	}
 
 	/**
