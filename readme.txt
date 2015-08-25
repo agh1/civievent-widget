@@ -2,8 +2,8 @@
 Contributors: agh1
 Tags: civicrm, events
 Requires at least: 3.3
-Tested up to: 4.2
-Stable tag: 1.2
+Tested up to: 4.3
+Stable tag: 1.3
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
