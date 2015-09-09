@@ -35,6 +35,49 @@ add_action( 'widgets_init', function() {
 });
 
 /**
+ * Deliver the widget as a shortcode.
+ *
+ * @param array $atts The shortcode attributes provided
+ *                    Available attributes include:
+ *                    - title string The widget title (default: "Upcoming Events"),
+ *                    - summary bool 1 = display the summary,
+ *                    - limit int The number of events (default: 5),
+ *                    - alllink bool 1 = display "view all",
+ *                    - wtheme string The widget theme (default: "stripe"),
+ *                    - divider string The location field delimiter (default comma),
+ *                    - city bool 1 = display event city,
+ *                    - state string display event state/province:
+ *                    	'abbreviate' - abbreviation
+ *                    	'full' - full name
+ *                    	'none' (default) - display nothing
+ *                    - country bool 1 = display event country.
+ *                    All booleans default to false; any value makes them true.
+ *
+ * @return string The widget to drop into the post body.
+ */
+function civievent_widget_shortcode( $atts ) {
+	$widget = new civievent_Widget( true );
+	$defaults = $widget::$_defaultWidgetParams;
+
+	// Taking care of those who take things literally.
+	foreach ( $atts as $k => $v ) {
+		if ( 'false' === $v ) {
+			$atts[ $k ] = false;
+		}
+	}
+
+	foreach ( $defaults as $param => $default ) {
+		if ( ! empty( $atts[ $param ] ) ) {
+			$defaults[ $param ] = ( false === $default ) ? true : $atts[ $param ];
+		}
+	}
+	$widgetAtts = array();
+	return $widget->widget( $widgetAtts, $defaults );
+}
+
+add_shortcode( 'civievent_widget', 'civievent_widget_shortcode' );
+
+/**
  * The widget class.
  */
 class civievent_Widget extends WP_Widget {
@@ -68,9 +111,35 @@ class civievent_Widget extends WP_Widget {
 	static $_timeFormat = null;
 
 	/**
-	 * Construct the basic widget object.
+	 * Default parameter values
+	 *
+	 * @var array $_defaultWidgetParams Default parameters
 	 */
-	public function __construct() {
+	static $_defaultWidgetParams = array(
+		'title' => '',
+		'wtheme' => 'stripe',
+		'limit' => 5,
+		'summary' => false,
+		'alllink' => false,
+		'city' => false,
+		'state' => 'none',
+		'country' => false,
+		'divider' => ', ',
+	);
+
+	/**
+	 * Whether this is actually displaying as a shortcode section, not a real widget
+	 *
+	 * @var bool $_isShortcode It's a shortcode.
+	 */
+	static $_isShortcode = false;
+
+	/**
+	 * Construct the basic widget object.
+	 *
+	 * @param bool $shortcode Whether this is actually a shortcode, not a widget.
+	 */
+	public function __construct( $shortcode = false ) {
 		// Widget actual processes.
 		parent::__construct(
 			'civievent-widget', // Base ID
@@ -78,9 +147,17 @@ class civievent_Widget extends WP_Widget {
 			array( 'description' => __( 'displays public CiviCRM events', 'civievent-widget' ) ) // Args.
 		);
 
+		if ( $shortcode ) {
+			self::$_isShortcode = true;
+		}
+
+		self::$_defaultWidgetParams['title'] = __( 'Upcoming Events', 'civievent-widget' );
 		$this->commonConstruct();
 	}
 
+	/**
+	 * Common features to both widgets.
+	 */
 	public function commonConstruct() {
 		if ( ! function_exists( 'civicrm_initialize' ) ) { return; }
 		civicrm_initialize();
@@ -149,9 +226,11 @@ class civievent_Widget extends WP_Widget {
 			$content .= "<div class=\"civievent-widget-viewall\"><a href=\"$viewall\">" . ts( 'View all' ) . '</a></div>';
 		}
 		$classes = array(
-			'widget',
 			'civievent-widget',
 		);
+		if ( ! self::$_isShortcode ) {
+			$classes[] = 'widget';
+		}
 		$classes[] = ( strlen( $instance['wtheme'] ) ) ? "civievent-widget-{$instance['wtheme']}" : 'civievent-widget-custom';
 		if ( $instance['summary'] ) {
 			$classes[] = 'civievent-widget-withsummary';
@@ -190,15 +269,13 @@ class civievent_Widget extends WP_Widget {
 		}
 
 		// Outputs the options form on admin.
-		$title = isset( $instance['title'] ) ? $instance['title'] : __( 'Upcoming Events', 'civievent-widget' );
-		$wtheme = isset( $instance['wtheme'] ) ? $instance['wtheme'] : 'stripe';
-		$limit = isset( $instance['limit'] ) ? $instance['limit'] : 5;
-		$summary = isset( $instance['summary'] ) ? (bool) $instance['summary'] : false;
-		$alllink = isset( $instance['alllink'] ) ? (bool) $instance['alllink'] : false;
-		$city = isset( $instance['city'] ) ? (bool) $instance['city'] : false;
-		$state = isset($instance['state']) ? $instance['state'] : 'none';
-		$country = isset( $instance['country'] ) ? (bool) $instance['country'] : false;
-		$divider = isset( $instance['divider'] ) ? $instance['divider'] : ', ';
+		foreach ( self::$_defaultWidgetParams as $param => $val ) {
+			if ( false === $val ) {
+				$$param = isset( $instance[ $param ] ) ? (bool) $instance[ $param ] : false;
+			} else {
+				$$param = isset( $instance[ $param ] ) ? $instance[ $param ] : $val;
+			}
+		}
 
 		?>
 		<p>
@@ -277,7 +354,7 @@ class civievent_Widget extends WP_Widget {
 	 * @param string  $state How to return state (abbreviate or full).
 	 * @param boolean $country Return country.
 	 */
-	public function locationInfo($eventId, $city = true, $state = null, $country = false) {
+	public function locationInfo( $eventId, $city = true, $state = null, $country = false ) {
 		$result = civicrm_api('Event', 'getsingle', array(
 			'version' => 3,
 			'id' => $eventId,
@@ -289,7 +366,7 @@ class civievent_Widget extends WP_Widget {
 			),
 		));
 
-		if ( $result['is_error'] ) {
+		if ( ! empty( $result['is_error'] ) ) {
 			return array();
 		}
 
@@ -345,7 +422,7 @@ class civievent_Widget extends WP_Widget {
 		$location = '';
 		$divider = ( isset($instance['divider'] ) ) ? $instance['divider'] : ', ';
 
-		if ( $instance['city'] || $instance['state'] || $instance['country'] ) {
+		if ( $instance['city'] || 'none' !== $instance['state'] || $instance['country'] ) {
 			$location = $this->locationInfo( $id, $instance['city'], $instance['state'], $instance['country'] );
 			$lprint = array();
 			$prevLvalue = null;
