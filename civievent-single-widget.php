@@ -22,18 +22,82 @@
  **/
 
 /**
+ * Deliver the widget as a shortcode.
+ *
+ * @param array $atts The shortcode attributes provided
+ *                    Available attributes include:
+ *                    - title string The widget title (default automatically fills
+ *                      with the event title),
+ *                    - wtheme string The widget theme (default: "standard"),
+ *                    - divider string The location field delimiter (default comma),
+ *                    - city bool 1 = display event city,
+ *                    - state string display event state/province:
+ *                    	'abbreviate' - abbreviation
+ *                    	'full' - full name
+ *                    	'none' (default) - display nothing
+ *                    - country bool 1 = display event country,
+ *                    - offset int The number of events to skip (default: 0).
+ *                    All booleans default to false; any value makes them true.
+ *
+ * @return string The widget to drop into the post body.
+ */
+function civievent_single_widget_shortcode( $atts ) {
+	$widget = new civievent_single_Widget( true );
+	$defaults = $widget::$_defaultWidgetParams;
+
+	// Taking care of those who take things literally.
+	foreach ( $atts as $k => $v ) {
+		if ( 'false' === $v ) {
+			$atts[ $k ] = false;
+		}
+	}
+
+	foreach ( $defaults as $param => $default ) {
+		if ( ! empty( $atts[ $param ] ) ) {
+			$defaults[ $param ] = ( false === $default ) ? true : $atts[ $param ];
+		}
+	}
+	$widgetAtts = array();
+	return $widget->widget( $widgetAtts, $defaults );
+}
+
+add_shortcode( 'civievent_single_widget', 'civievent_single_widget_shortcode' );
+
+/**
  * The widget class.
  */
 class civievent_single_Widget extends civievent_Widget {
 	/**
-	 * Construct the basic widget object.
+	 * Default parameter values
+	 *
+	 * @var array $_defaultWidgetParams Default parameters
 	 */
-	public function __construct() {
+	static $_defaultWidgetParams = array(
+		'title' => '',
+		'wtheme' => 'standard',
+		'alllink' => false,
+		'city' => false,
+		'state' => 'none',
+		'country' => false,
+		'divider' => ', ',
+		'offset' => 0,
+	);
+
+	/**
+	 * Construct the basic widget object.
+	 *
+	 * @param bool $shortcode Whether this is actually a shortcode, not a widget.
+	 */
+	public function __construct( $shortcode = false ) {
 		WP_Widget::__construct(
 			'civievent-single-widget', // Base ID
 			__( 'Single CiviEvent Widget', 'civievent-widget' ), // Name
 			array( 'description' => __( 'displays a single CiviCRM event', 'civievent-widget' ) ) // Args.
 		);
+
+		if ( $shortcode ) {
+			self::$_isShortcode = true;
+		}
 		$this->commonConstruct();
 	}
 
@@ -90,10 +154,10 @@ class civievent_single_Widget extends civievent_Widget {
 				$content .= "<div class=\"civievent-widget-single-viewall\"><a href=\"$viewall\">" . ts( 'View all' ) . '</a></div>';
 			}
 		}
-		$classes = array(
-			'widget',
-			'civievent-widget-single',
-		);
+		$classes = array( 'civievent-widget' );
+		if ( ! self::$_isShortcode ) {
+			$classes[] = 'widget';
+		}
 		$classes[] = ( strlen( $instance['wtheme'] ) ) ? "civievent-widget-single-{$instance['wtheme']}" : 'civievent-widget-single-custom';
 
 		foreach ( $classes as &$class ) {
@@ -130,14 +194,13 @@ class civievent_single_Widget extends civievent_Widget {
 		}
 
 		// Outputs the options form on admin.
-		$title = isset( $instance['title'] ) ? $instance['title'] : '';
-		$wtheme = isset( $instance['wtheme'] ) ? $instance['wtheme'] : 'standard';
-		$alllink = isset( $instance['alllink'] ) ? (bool) $instance['alllink'] : false;
-		$city = isset( $instance['city'] ) ? (bool) $instance['city'] : false;
-		$state = isset($instance['state']) ? $instance['state'] : 'none';
-		$country = isset( $instance['country'] ) ? (bool) $instance['country'] : false;
-		$divider = isset( $instance['divider'] ) ? $instance['divider'] : ', ';
-		$offset = isset( $instance['offset'] ) ? $instance['offset'] : 0;
+		foreach ( self::$_defaultWidgetParams as $param => $val ) {
+			if ( false === $val ) {
+				$$param = isset( $instance[ $param ] ) ? (bool) $instance[ $param ] : false;
+			} else {
+				$$param = isset( $instance[ $param ] ) ? $instance[ $param ] : $val;
+			}
+		}
 
 		?>
 		<p>
