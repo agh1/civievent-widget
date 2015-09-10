@@ -1,6 +1,6 @@
 === CiviEvent Widget ===
 Contributors: agh1
-Tags: civicrm, events
+Tags: civicrm, events, event, nonprofit, crm, calendar
 Requires at least: 3.3
 Tested up to: 4.3
 Stable tag: 2.0
@@ -48,6 +48,30 @@ Read more at http://aghstrategies.com/civievent-widget
 1. Activate the plugin through the 'Plugins' menu in WordPress
 1. Go to the 'Widgets' page in WordPress to add and configure one or more widgets.
 1. Insert shortcodes into posts or pages as appropriate.
+
+== Frequently Asked Questions ==
+
+= What's CiviCRM? =
+
+CiviCRM is the leading open-source constituent relationship management (CRM) system for nonprofits.  This plugin *is not* CiviCRM, but you can read all about and download CiviCRM at http://civicrm.org.  Free to download, free to install and use, free to share, and free to modify, CiviCRM is a great solution for not-for-profit and charitable organizations looking to track donors, event participants, case clients, members, and more.
+
+= Why does this plugin exist? =
+
+CiviCRM provides full pages of info on single events, plus a poorly-documented page listing all public upcoming events, but there's no simple widget for listing the events in the WordPress sidebar or as a shortcode that doesn't overwhelm your page content.
+
+= Who's behind this? =
+
+This plugin was developed by AGH Strategies, a CiviCRM consulting firm in Washington, DC.  The plugin is driven by our clients' needs, and others have commissioned features that are important for their organizations.
+
+Read more about us at https://aghstrategies.com/
+
+= Why are my widget's links not working right? =
+
+Go into CiviCRM and visit the Manage Events page in the Events menu.  Check out the event links there--most likely they are identical to what the widget provides.  If the widget's links cause you trouble, you probably have fundamental problems with your CiviCRM installation: the widgets just use CiviCRM to provide links.
+
+= How can I sponsor a new feature? =
+
+Like most successful open-source projects, this is a collaboration between a number of users' needs.  If you have an idea for a feature and would like to see it happen, please contact us at https://aghstrategies.com/contact.  Even if your budget is small, we can often combine several use cases into a unified new feature, splitting the cost among several organizations.
 
 == Changelog ==
 
