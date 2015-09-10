@@ -225,9 +225,7 @@ class civievent_Widget extends WP_Widget {
 			$viewall = CRM_Utils_System::url( 'civicrm/event/ical', 'reset=1&list=1&html=1' );
 			$content .= "<div class=\"civievent-widget-viewall\"><a href=\"$viewall\">" . ts( 'View all' ) . '</a></div>';
 		}
-		$classes = array(
-			'civievent-widget',
-		);
+		$classes = array( 'civievent-widget' );
 		if ( ! self::$_isShortcode ) {
 			$classes[] = 'widget';
 		}
