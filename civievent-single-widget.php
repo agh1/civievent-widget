@@ -46,9 +46,11 @@ function civievent_single_widget_shortcode( $atts ) {
 	$defaults = $widget::$_defaultWidgetParams;
 
 	// Taking care of those who take things literally.
-	foreach ( $atts as $k => $v ) {
-		if ( 'false' === $v ) {
-			$atts[ $k ] = false;
+	if ( is_array( $atts ) ) {
+		foreach ( $atts as $k => $v ) {
+			if ( 'false' === $v ) {
+				$atts[ $k ] = false;
+			}
 		}
 	}
 
