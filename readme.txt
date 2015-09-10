@@ -7,11 +7,11 @@ Stable tag: 2.0
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
-Display widgets for CiviCRM events: the next public event or a whole list.
+Display widgets for CiviCRM events: the next public event or a whole list. Embed widgets as shortcodes, too!
 
 == Description ==
 
-You can use the CiviEvent widget to add two types of widgets for upcoming public events from CiviCRM.  There's no limit to the number of widgets you can add of either type.
+You can use the CiviEvent widget to add two types of widgets for upcoming public events from CiviCRM.  There's no limit to the number of widgets you can add of either type.  You can include the widgets in the sidebar like normal, or you can include them via shortcodes in the body of your posts.
 
 = CiviEvent List Widget =
 
@@ -26,21 +26,21 @@ This widget displays a single public event from CiviCRM.  By default, it will di
 Both widgets are available to be inserted into the body of a post using a shortcode.  Use the `[civievent_widget]` shortcode for the events listing and the `[civievent_single_widget]` shortcode for the single next (or offset) event.  The available parameters for the shortcodes are as follows:
 
 * **`title="Your Title"`** The widget title (default: "Upcoming Events" for the list widget, or the event's title for the single widget).
-* **`summary=1`** Display the summary.  Omit the parameter or set it to 0 to hide the summary. (List widget only.)
-* **`limit=5`** Display the specified number of events (default: 5).  (List widget only.)
-* **`alllink=1`** Display "view all" with a link to the page with a full list of public events.  Omit the parameter or set it to 0 to hide the link.  (List widget only.)
+* **`summary=1`** Display the event summary.  Omit the parameter or set it to 0 to hide the summary. *(List widget only.)*
+* **`limit=5`** Display the specified number of events (default: 5).  *(List widget only.)*
+* **`alllink=1`** Display "view all" with a link to the page with a full list of public events.  Omit the parameter or set it to 0 to hide the link.  *(List widget only.)*
 * **`wtheme="mytheme"`** The widget theme (a class added to the widget div).  Set a new one and handle it in your theme's CSS.  (Default for list widget: "stripe", with "divider" as an alternative.  Default for single widget: "standard".)
 * **`divider=" | "`** The location field delimiter (default: comma followed by a space).
 * **`city=1`** Display the event's city.  Omit the parameter or set it to 0 to hide the city.
-* **`state="abbreviate"`** Display the event's state/province.  Default is "none", which will display nothing.  Display options are "abbreviate" for the state/province abbreviation or "full" for the full name.
+* **`state="abbreviate"`** Display the event's state/province.  Default is "none", which will display nothing about the state or province.  Display options are "abbreviate" for the state/province abbreviation or "full" for the full name.
 * **`country=1`** Display the event's country.  Omit the parameter or set it to 0 to hide the country.
-* **`offset=2`** Skip the given number of events (default: 0).  (Single widget only.)
+* **`offset=2`** Skip the given number of events before displaying the next one (default: 0).  *(Single widget only.)*
 
 = Further Notes =
 
 This plugin requires CiviCRM 4.3 or higher.
 
-Read more at http://aghstrategies.com/civievent-widget
+Read more at https://aghstrategies.com/civievent-widget
 
 == Installation ==
 
@@ -72,6 +72,10 @@ Go into CiviCRM and visit the Manage Events page in the Events menu.  Check out 
 = How can I sponsor a new feature? =
 
 Like most successful open-source projects, this is a collaboration between a number of users' needs.  If you have an idea for a feature and would like to see it happen, please contact us at https://aghstrategies.com/contact.  Even if your budget is small, we can often combine several use cases into a unified new feature, splitting the cost among several organizations.
+
+= What's all this about themes? =
+
+You might want to have different CiviEvent widgets on your site look different.  Setting the "theme" in the widget settings or the shortcode doesn't pick a different site theme, but it adds a class to your widget.  Using one of the built-in theme options will provide a straightforward display, or you can create your own: just type something new as the widget theme and then add CSS in your site's theme to handle it.  The plugin was built from the perspective that while the widget should look reasonable out-of-the-box, most sites who care strongly about the widget's appearance will already be implementing a lot of custom CSS.  There's no need for the widget to come with a lot of heavy-handed theming.
 
 == Changelog ==
 
