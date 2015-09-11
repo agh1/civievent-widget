@@ -3,7 +3,7 @@
 Plugin Name: CiviEvent Widget
 Plugin URI: http://www.aghstrategies.com/civievent-widget
 Description: The CiviEvent Widget plugin displays public CiviCRM events in a widget.
-Version: 2.0
+Version: 2.1
 Author: AGH Strategies, LLC
 Author URI: http://aghstrategies.com/
 */
@@ -239,8 +239,13 @@ class civievent_Widget extends WP_Widget {
 			$class = sanitize_html_class( $class );
 		}
 		$classes = implode( ' ', $classes );
-		echo "<div class=\"$classes\">$content</div>";
+
 		wp_enqueue_style( 'civievent-widget-Stylesheet' );
+		if ( self::$_isShortcode ) {
+			return "<div class=\"$classes\">$content</div>";
+		} else {
+			echo "<div class=\"$classes\">$content</div>";
+		}
 	}
 
 	/**

@@ -3,7 +3,7 @@ Contributors: agh1
 Tags: civicrm, events, event, nonprofit, crm, calendar
 Requires at least: 3.3
 Tested up to: 4.3
-Stable tag: 2.0
+Stable tag: 2.1
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
@@ -78,6 +78,9 @@ Like most successful open-source projects, this is a collaboration between a num
 You might want to have different CiviEvent widgets on your site look different.  Setting the "theme" in the widget settings or the shortcode doesn't pick a different site theme, but it adds a class to your widget.  Using one of the built-in theme options will provide a straightforward display, or you can create your own: just type something new as the widget theme and then add CSS in your site's theme to handle it.  The plugin was built from the perspective that while the widget should look reasonable out-of-the-box, most sites who care strongly about the widget's appearance will already be implementing a lot of custom CSS.  There's no need for the widget to come with a lot of heavy-handed theming.
 
 == Changelog ==
+
+= 2.1 =
+* Fixed bug where shortcode echos content at the top rather than dropping it into place
 
 = 2.0 =
 * Both widgets are now available as shortcodes
