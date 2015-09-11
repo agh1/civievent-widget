@@ -166,8 +166,13 @@ class civievent_single_Widget extends civievent_Widget {
 			$class = sanitize_html_class( $class );
 		}
 		$classes = implode( ' ', $classes );
-		echo "<div class=\"$classes\">$content</div>";
+
 		wp_enqueue_style( 'civievent-widget-Stylesheet' );
+		if ( self::$_isShortcode ) {
+			return "<div class=\"$classes\">$content</div>";
+		} else {
+			echo "<div class=\"$classes\">$content</div>";
+		}
 	}
 
 	/**
