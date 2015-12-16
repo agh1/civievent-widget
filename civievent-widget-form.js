@@ -81,9 +81,9 @@
       }
       existing[field][attrib] = val;
       $item.val(JSON.stringify(existing));
-      fillCustomDisplay($item);
+      fillCustomDisplay($item, field);
     }
-    function fillCustomDisplay($item) {
+    function fillCustomDisplay($item, activeUiField = null) {
       try {
         existing = JSON.parse($item.val());
       } catch (e) {
@@ -99,6 +99,9 @@
             class: 'field-custom-ui field-custom-ui-' + field,
             fieldname: field,
           }).appendTo($ui);
+          if (field == activeUiField) {
+            $fieldui.addClass('active-ui-field');
+          }
           var $fieldtitle = $('<div/>', {
             class: 'fieldtitle',
             text: $select.find('option[value="' + field + '"]').html(),
