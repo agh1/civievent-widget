@@ -202,19 +202,24 @@ class civievent_Widget extends WP_Widget {
 
 		$standardDisplay = false;
 		if ( ! empty( $instance['custom_display'] ) ) {
-			$custom = explode( ',', str_replace( ' ', '', $instance['custom_display'] ) );
-			foreach ( $custom as $i => $name ) {
+			$custom = json_decode( $instance['custom_display'], true );
+			foreach ( $custom as $name => $fieldAttrs ) {
 				// Make sure only legit fields are sent.
 				if ( empty( $fields[ $name ] ) ) {
-					unset( $custom[ $i ] );
+					unset( $custom[ $name ] );
 				}
 			}
 			if ( empty( $custom ) ) {
 				$standardDisplay = true;
 			} else {
+				$fieldsToRetrieve = array_keys( $custom );
+				$customDisplayFields = array_intersect_key( self::getCustomDisplayTitles(), $custom );
+				foreach ( $customDisplayFields as $customDisplayField => $dontcare ) {
+					$fieldsToRetrieve += self::getCustomDisplayField( $customDisplayField );
+				}
 				try {
 					$eventsCustom = civicrm_api3('Event', 'get', array(
-						'return' => $custom,
+						'return' => array_unique( $fieldsToRetrieve ),
 						'start_date' => array( '>=' => date( 'Y-m-d' ) ),
 						'is_public' => 1,
 						'options' => array(
@@ -229,16 +234,25 @@ class civievent_Widget extends WP_Widget {
 							$oe = ($index&1) ? 'odd' : 'even';
 							$content .= "<div class=\"civievent-widget-event civievent-widget-event-$oe civievent-widget-event-$index\">";
 							$index++;
-							foreach ( $custom as $name ) {
+							foreach ( $custom as $name => $fieldAttrs ) {
 								if ( empty( $event[ $name ] ) ) {
-									continue;
+									if ( array_key_exists( $name, $customDisplayFields ) ) {
+										$fieldVal = self::getCustomDisplayField( $name, $event );
+									} else {
+										continue;
+									}
+								} else {
+									$fieldVal = $event[ $name ];
 								}
+								$rowField = empty( $fieldAttrs['prefix'] ) ? '' : wp_filter_kses( $fieldAttrs['prefix'] );
+								if ( ! empty( $fieldAttrs['title'] ) ) {
+								 	$rowField .= empty( $fieldAttrs['wrapper'] ) ? "{$fields[ $name ]}: " : "<span class=\"civievent-widget-custom-label\">{$fields[ $name ]}: </span>";
+								}
+								$rowField .= empty( $fieldAttrs['wrapper'] ) ? $fieldVal : "<span class=\"civievent-widget-custom-value\">$fieldVal</span>";
+								$rowField .= empty( $fieldAttrs['suffix'] ) ? '' : wp_filter_kses( $fieldAttrs['suffix'] );
+
 								$rowClass = sanitize_html_class( "civievent-widget-custom-display-$name" );
-								$content .= "<span class=\"$rowClass\">
-									<span class=\"civievent-widget-custom-label\">{$fields[ $name ]}</span>
-									<span class=\"civievent-widget-custom-value\">{$event[ $name ]}</span>
-									</span>
-								";
+								$content .= empty( $fieldAttrs['wrapper'] ) ? "$rowField\n" : "<span class=\"$rowClass\">$rowField</span>\n";
 							}
 							$content .= '</div>';
 						}
@@ -342,6 +356,7 @@ class civievent_Widget extends WP_Widget {
 		}
 
 		wp_enqueue_script( 'civievent-widget-form', plugins_url( 'civievent-widget-form.js', __FILE__ ), array( 'jquery', 'underscore' ) );
+		wp_enqueue_style( 'civievent-widget-form-css', plugins_url( 'civievent-widget-form.css', __FILE__ ) );
 
 		// Outputs the options form on admin.
 		foreach ( $this->_defaultWidgetParams as $param => $val ) {
@@ -377,37 +392,48 @@ class civievent_Widget extends WP_Widget {
 		<label for="<?php echo $this->get_field_id( 'limit' ); ?>"><?php _e( 'Limit:', 'civievent-widget' ); ?></label>
 		<input class="widefat" id="<?php echo $this->get_field_id( 'limit' ); ?>" name="<?php echo $this->get_field_name( 'limit' ); ?>" type="text" value="<?php echo esc_attr( $limit ); ?>" />
 		</p>
-		<p><input type="checkbox" <?php checked( $city ); ?> name="<?php echo $this->get_field_name( 'city' ); ?>" id="<?php echo $this->get_field_id( 'city' ); ?>" class="checkbox">
-		<label for="<?php echo $this->get_field_id( 'city' ); ?>"><?php _e( 'Display city?', 'civievent-widget' ); ?></label>
-		</p>
-		<p>
-		<label for="<?php echo $this->get_field_id( 'state' ); ?>"><?php _e( 'Display state/province?', 'civievent-widget' ); ?></label>
-			<select name="<?php echo $this->get_field_name( 'state' ); ?>" id="<?php echo $this->get_field_id( 'state' ); ?>">
-				<option value="none" <?php selected( $state, 'none' ); ?>><?php _e( 'Hidden', 'civievent-widget' ); ?></option>
-				<option value="abbreviate" <?php selected( $state, 'abbreviate' ); ?>><?php _e( 'Abbreviations', 'civievent-widget' ); ?></option>
-				<option value="full" <?php selected( $state, 'full' ); ?>><?php _e( 'Full names', 'civievent-widget' ); ?></option>
-			</select>
-		</p>
-		<p><input type="checkbox" <?php checked( $country ); ?> name="<?php echo $this->get_field_name( 'country' ); ?>" id="<?php echo $this->get_field_id( 'country' ); ?>" class="checkbox">
-		<label for="<?php echo $this->get_field_id( 'country' ); ?>"><?php _e( 'Display country?', 'civievent-widget' ); ?></label>
-		</p>
-		<p>
-		<label for="<?php echo $this->get_field_id( 'divider' ); ?>"><?php _e( 'City, state, country divider:', 'civievent-widget' ); ?></label>
-		<input class="widefat" id="<?php echo $this->get_field_id( 'divider' ); ?>" name="<?php echo $this->get_field_name( 'divider' ); ?>" type="text" value="<?php echo esc_attr( $divider ); ?>" />
-		<?php _e( 'Enter the character(s) that should separate the city, state/province, and/or country when displayed.', 'civievent-widget' ); ?>
-		</p>
-		<p><input type="checkbox" <?php checked( $summary ); ?> name="<?php echo $this->get_field_name( 'summary' ); ?>" id="<?php echo $this->get_field_id( 'summary' ); ?>" class="checkbox">
-		<label for="<?php echo $this->get_field_id( 'summary' ); ?>"><?php _e( 'Display summary?', 'civievent-widget' ); ?></label>
-		</p>
-		<p><input type="checkbox" <?php checked( $alllink ); ?> name="<?php echo $this->get_field_name( 'alllink' ); ?>" id="<?php echo $this->get_field_id( 'alllink' ); ?>" class="checkbox">
-		<label for="<?php echo $this->get_field_id( 'alllink' ); ?>"><?php _e( 'Display "view all"?', 'civievent-widget' ); ?></label>
-		</p>
-		<p>
-		<label for="<?php echo $this->get_field_id( 'custom_display' ); ?>"><?php _e( 'Custom display fields:', 'civievent-widget' ); ?></label>
-		<?php echo $fieldSelect; ?>
-		<input class="widefat" id="<?php echo $this->get_field_id( 'custom_display' ); ?>" name="<?php echo $this->get_field_name( 'custom_display' ); ?>" type="text" value="<?php echo esc_attr( $custom_display ); ?>" />
-		<?php _e( 'ADVANCED: If you want to display additional or different fields, add their names here using the drop-down.', 'civievent-widget' ); ?>
-		</p>
+		<div class="civievent-widget-admin-sections">
+			<input type="radio" id="<?php echo $this->get_field_id( 'admin-type-simple' ); ?>" name="civievent-widget-admin-type" value="simple">
+			<input type="radio" id="<?php echo $this->get_field_id( 'admin-type-custom' ); ?>" name="civievent-widget-admin-type" value="custom">
+			<label for="<?php echo $this->get_field_id( 'admin-type-simple' ); ?>" class="civievent-widget-admin-type-label">Simple</label>
+			<label for="<?php echo $this->get_field_id( 'admin-type-custom' ); ?>" class="civievent-widget-admin-type-label">Custom</label>
+			<div class="civievent-widget-admin-simple">
+				<p><input type="checkbox" <?php checked( $city ); ?> name="<?php echo $this->get_field_name( 'city' ); ?>" id="<?php echo $this->get_field_id( 'city' ); ?>" class="checkbox">
+				<label for="<?php echo $this->get_field_id( 'city' ); ?>"><?php _e( 'Display city?', 'civievent-widget' ); ?></label>
+				</p>
+				<p>
+				<label for="<?php echo $this->get_field_id( 'state' ); ?>"><?php _e( 'Display state/province?', 'civievent-widget' ); ?></label>
+					<select name="<?php echo $this->get_field_name( 'state' ); ?>" id="<?php echo $this->get_field_id( 'state' ); ?>">
+						<option value="none" <?php selected( $state, 'none' ); ?>><?php _e( 'Hidden', 'civievent-widget' ); ?></option>
+						<option value="abbreviate" <?php selected( $state, 'abbreviate' ); ?>><?php _e( 'Abbreviations', 'civievent-widget' ); ?></option>
+						<option value="full" <?php selected( $state, 'full' ); ?>><?php _e( 'Full names', 'civievent-widget' ); ?></option>
+					</select>
+				</p>
+				<p><input type="checkbox" <?php checked( $country ); ?> name="<?php echo $this->get_field_name( 'country' ); ?>" id="<?php echo $this->get_field_id( 'country' ); ?>" class="checkbox">
+				<label for="<?php echo $this->get_field_id( 'country' ); ?>"><?php _e( 'Display country?', 'civievent-widget' ); ?></label>
+				</p>
+				<p>
+				<label for="<?php echo $this->get_field_id( 'divider' ); ?>"><?php _e( 'City, state, country divider:', 'civievent-widget' ); ?></label>
+				<input class="widefat" id="<?php echo $this->get_field_id( 'divider' ); ?>" name="<?php echo $this->get_field_name( 'divider' ); ?>" type="text" value="<?php echo esc_attr( $divider ); ?>" />
+				<?php _e( 'Enter the character(s) that should separate the city, state/province, and/or country when displayed.', 'civievent-widget' ); ?>
+				</p>
+				<p><input type="checkbox" <?php checked( $summary ); ?> name="<?php echo $this->get_field_name( 'summary' ); ?>" id="<?php echo $this->get_field_id( 'summary' ); ?>" class="checkbox">
+				<label for="<?php echo $this->get_field_id( 'summary' ); ?>"><?php _e( 'Display summary?', 'civievent-widget' ); ?></label>
+				</p>
+				<p><input type="checkbox" <?php checked( $alllink ); ?> name="<?php echo $this->get_field_name( 'alllink' ); ?>" id="<?php echo $this->get_field_id( 'alllink' ); ?>" class="checkbox">
+				<label for="<?php echo $this->get_field_id( 'alllink' ); ?>"><?php _e( 'Display "view all"?', 'civievent-widget' ); ?></label>
+				</p>
+			</div>
+			<div class="civievent-widget-admin-custom">
+				<p>
+				<label for="<?php echo $this->get_field_id( 'custom_display' ); ?>"><?php _e( 'Custom display fields:', 'civievent-widget' ); ?></label>
+				<?php echo $fieldSelect; ?>
+				<input class="widefat civievent-widget-custom-display-params" id="<?php echo $this->get_field_id( 'custom_display' ); ?>" name="<?php echo $this->get_field_name( 'custom_display' ); ?>" type="text" value="<?php echo esc_attr( $custom_display ); ?>" />
+				<?php _e( 'ADVANCED: If you want to display additional or different fields, add their names here using the drop-down.', 'civievent-widget' ); ?>
+				<span class="civievent-widget-custom-display-ui"></span>
+				</p>
+			</div>
+		</div>
 		<?php
 	}
 
@@ -573,8 +599,61 @@ class civievent_Widget extends WP_Widget {
 				// TODO: log the error.
 				$error = $e->getMessage();
 			}
+			$return += self::getCustomDisplayTitles();
 			$this->_eventFields = $return;
 		}
 		return $this->_eventFields;
+	}
+
+	public static function getCustomDisplayTitles() {
+		return array(
+			'event_title_infolink' => __( 'Event Title (linked to info page)', 'civievent-widget' ),
+			'event_title_reglink' => __( 'Event Title (linked to registration)', 'civievent-widget' ),
+			'registration_link_text_reglink' => __( 'Registration Link', 'civievent-widget' ),
+		);
+	}
+
+	public static function getCustomDisplayField( $field, $event = array() ) {
+		$reqs = array(
+			'event_title_infolink' => array(
+				'event_title',
+				'id',
+			),
+			'event_title_reglink' => array(
+				'event_title',
+				'id',
+			),
+			'registration_link_text_reglink' => array(
+				'registration_link_text',
+				'id',
+			),
+		);
+
+		if ( array_key_exists( $field, $reqs ) ) {
+			// Return the required fields.
+			if ( empty( $event ) ) {
+				return $reqs[ $field ];
+			}
+
+			// Make sure required fields are in $event.
+			$r = array_flip( $reqs[ $field ] );
+			if ( array_intersect_key( $r, $event ) !== $r ) {
+				return;
+			}
+		} else {
+			return;
+		}
+
+		// What should be returned for each custom display field.
+		switch ( $field ) {
+			case 'event_title_infolink':
+				return CRM_Utils_System::href( $event['event_title'], 'civicrm/event/info', "reset=1&id={$event['id']}", true, null, true, true );
+
+			case 'event_title_reglink':
+				return CRM_Utils_System::href( $event['event_title'], 'civicrm/event/register', "reset=1&id={$event['id']}", true, null, true, true );
+
+			case 'registration_link_text_reglink':
+				return CRM_Utils_System::href( $event['registration_link_text'], 'civicrm/event/register', "reset=1&id={$event['id']}", true, null, true, true );
+		}
 	}
 }
