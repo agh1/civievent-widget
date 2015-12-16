@@ -35,10 +35,13 @@ Both widgets are available to be inserted into the body of a post using a shortc
 * **`state="abbreviate"`** Display the event's state/province.  Default is "none", which will display nothing about the state or province.  Display options are "abbreviate" for the state/province abbreviation or "full" for the full name.
 * **`country=1`** Display the event's country.  Omit the parameter or set it to 0 to hide the country.
 * **`offset=2`** Skip the given number of events before displaying the next one (default: 0).  *(Single widget only.)*
+* **`admin_type="simple"`* Whether to use the "simple" (default) or "custom" display options (as appear in the widget settings).  The `custom_display` and `custom_filter` parameters only function alongside `admin_type="custom"`.  The `summary`, `alllink`, `divider`, `city`, `state`, and `country` parameters only function when `admin_type="simple"` (or reverting to the default). *(List widget only.)*
+* **`custom_display='{"event_title_infolink":{"title":0,"prefix":null,"suffix":null,"wrapper":1},"description":{"title":1,"prefix":null,"suffix":null,"wrapper":1}}'`** Custom options for displaying results when `admin_type="custom"`. The value should be an object written in JSON. Each property name should be a field to display, and the property value should be an object with the following properties: `title` (1 or 0: whether to display the field name), `prefix` (`null` or a string with markup to precede the field), `suffix` (`null` or a string with markup to follow the field), and `wrapper` (1 or 0: whether to wrap the field with the default wrapper elements.  You may configure a widget using the standard widget interface, click "Show JSON", and copy the JSON into this parameter.  If `custom_display` is missing, the listing will revert to displaying in the "simple" mode despite the `admin_type` value.  *(List widget only.)*
+* **`custom_filter='{"start_date": {">=": "2015-12-16"}, "is_public": 1, "options": {"sort": "start_date ASC"}}'`** Custom options for filtering results when `admin_type="custom"`. The value should be an object written in JSON.  The object should be a valid set of parameters for the CiviCRM API.  The default is to list all public events starting on today's date or later, sorted by start date ascending.  *(List widget only.)*
 
 = Further Notes =
 
-This plugin requires CiviCRM 4.3 or higher.
+This plugin requires CiviCRM 4.3 or higher to function.  It is only supported with CiviCRM 4.6 or higher.
 
 Read more at https://aghstrategies.com/civievent-widget
 
@@ -76,6 +79,14 @@ Like most successful open-source projects, this is a collaboration between a num
 = What's all this about themes? =
 
 You might want to have different CiviEvent widgets on your site look different.  Setting the "theme" in the widget settings or the shortcode doesn't pick a different site theme, but it adds a class to your widget.  Using one of the built-in theme options will provide a straightforward display, or you can create your own: just type something new as the widget theme and then add CSS in your site's theme to handle it.  The plugin was built from the perspective that while the widget should look reasonable out-of-the-box, most sites who care strongly about the widget's appearance will already be implementing a lot of custom CSS.  There's no need for the widget to come with a lot of heavy-handed theming.
+
+= How does the Custom API Filter work? =
+
+You can write a bit of JSON to filter your results for the CiviEvent List Widget in Custom mode.  This uses the syntax for the CiviCRM API.  For example, to only include events with online registration enabled, enter `{"is_online_registration": 1}` in the Custom API Filter field.  By default, results have the `event_start_date` greater than or equal to today and have `is_public` equal to 1.  You can override these.
+
+You can also adjust the limit, sort, or offset by adding items under `options`.  For example, `{"is_online_registration": 1, "options": {"sort": "title ASC", "limit": 3, "offset": 4}}` will display the fifth, sixth, and seventh events in order of title.
+
+**Note:** CiviCRM's API takes JSON arrays in some cases.  A JSON array is denoted by square brackets.  A shortcode is denoted by square brackets.  If you use the `custom_filter` shortcode parameter to set a custom API filter, you'll have trouble if you use square brackets for arrays.  As a workaround, write arrays as objects with sequentially numbered properties: `{"0": "First Thing", "1": "Second Thing"}` instead of `["First Thing","Second Thing"]`.
 
 == Changelog ==
 
