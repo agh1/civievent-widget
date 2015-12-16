@@ -1,0 +1,10 @@
+.civievent-widget-custom-display-ui {
+  display: block;
+}
+
+.civievent-widget-custom-display-ui .field-custom-ui {
+  display: inline-block;
+  border: solid 1px #444;
+  padding: .5em 1em;
+  margin: 0 .5em .5em 0;
+}
