@@ -191,12 +191,9 @@ class civievent_Widget extends WP_Widget {
 		if ( version_compare( self::$_civiversion, '4.3.alpha1' ) < 0 ) { return; }
 
 		// Outputs the content of the widget.
-		$title = apply_filters( 'widget_title', $instance['title'] );
-		$content = $title ? "<h3 class=\"title widget-title civievent-widget-title\">$title</h3>" : '';
-
 		$cal = CRM_Event_BAO_Event::getCompleteInfo();
 		$index = 0;
-		$content .= '<div class="civievent-widget-list">';
+		$content = '<div class="civievent-widget-list">';
 		foreach ( $cal as $event ) {
 			$url = CRM_Utils_Array::value( 'url', $event );
 			$title = CRM_Utils_Array::value( 'title', $event );
@@ -227,10 +224,8 @@ class civievent_Widget extends WP_Widget {
 			$viewall = CRM_Utils_System::url( 'civicrm/event/ical', 'reset=1&list=1&html=1' );
 			$content .= "<div class=\"civievent-widget-viewall\"><a href=\"$viewall\">" . ts( 'View all' ) . '</a></div>';
 		}
-		$classes = array( 'civievent-widget' );
-		if ( ! self::$_isShortcode ) {
-			$classes[] = 'widget';
-		}
+		$classes = array();
+
 		$classes[] = ( strlen( $instance['wtheme'] ) ) ? "civievent-widget-{$instance['wtheme']}" : 'civievent-widget-custom';
 		if ( $instance['summary'] ) {
 			$classes[] = 'civievent-widget-withsummary';
@@ -241,10 +236,16 @@ class civievent_Widget extends WP_Widget {
 		$classes = implode( ' ', $classes );
 
 		wp_enqueue_style( 'civievent-widget-Stylesheet' );
+		$title = apply_filters( 'widget_title', $instance['title'] );
 		if ( self::$_isShortcode ) {
-			return "<div class=\"$classes\">$content</div>";
+			if ( ! empty( $title ) ) {
+				$content = "<h3 class=\"title widget-title civievent-widget-title\">$title</h3>$content";
+			}
+			return "<div class=\"civievent-widget $classes\">$content</div>";
 		} else {
-			echo "<div class=\"$classes\">$content</div>";
+			$wTitle = $title ? $args['before_title'] . $title . $args['after_title'] : '';
+			$content = "$wTitle<div class=\"$classes\">$content</div>";
+			echo $args['before_widget'] . $content . $args['after_widget'];
 		}
 	}
 
