@@ -44,7 +44,24 @@
       $(this).val('');
     } );
     $('.civievent-widget-custom-display-params').each( function() {
-      fillCustomDisplay($(this));
+      $params = $(this);
+      fillCustomDisplay($params);
+      var $showJson = $('<a/>', {
+        class: 'show-json',
+        text: 'Show JSON',
+        href: '#',
+        onclick: 'return false;',
+      });
+      $showJson.click({ item: $params, showJson: $showJson }, function(event) {
+        event.data.item.toggle();
+        if (event.data.showJson.html() == 'Show JSON') {
+          event.data.showJson.html('Hide JSON');
+        }
+        else {
+          event.data.showJson.html('Show JSON');
+        }
+      });
+      $(this).after($showJson);
     } );
     function removefield(field, $item) {
       try {
@@ -80,9 +97,18 @@
           var fieldWrapper = document.createElement('span');
           var $fieldui = $('<span/>', {
             class: 'field-custom-ui field-custom-ui-' + field,
-            text: $select.find('option[value="' + field + '"]').html(),
             fieldname: field,
           }).appendTo($ui);
+          var $fieldtitle = $('<div/>', {
+            class: 'fieldtitle',
+            text: $select.find('option[value="' + field + '"]').html(),
+          }).click({ field: field, fieldui: $fieldui }, function(event) {
+            var unsetClass = $(event.data.fieldui).hasClass('active-ui-field');
+            $('.field-custom-ui.active-ui-field').removeClass('active-ui-field');
+            if (!unsetClass) {
+              $(event.data.fieldui).addClass('active-ui-field')
+            }
+          });
           var $displayTitle = $('<input/>', {
             type: 'checkbox',
             name: field + '-title',
@@ -118,34 +144,38 @@
             removefield(event.data.field, event.data.item);
           });
           $fieldui.append(
-            $('<br/>'),
-            $displayTitle,
-            $('<label/>', {
-              for: field + '-title',
-              text: 'Display title?',
-            }),
-            $('<br/>'),
-            $('<label/>', {
-              for: field + '-prefix',
-              text: 'Prefix:',
-            }),
-            ' ',
-            $prefix,
-            $('<br/>'),
-            $('<label/>', {
-              for: field + '-suffix',
-              text: 'Suffix:',
-            }),
-            ' ',
-            $suffix,
-            $('<br/>'),
-            $displayWrapper,
-            $('<label/>', {
-              for: field + '-wrapper',
-              text: 'Wrap field/title in <span>',
-            }),
-            $('<br/>'),
-            $remove
+            $fieldtitle,
+            $('<div/>').append(
+              $displayTitle,
+              $('<label/>', {
+                for: field + '-title',
+                text: 'Display title?',
+              })
+            ),
+            $('<div/>').append(
+              $('<label/>', {
+                for: field + '-prefix',
+                text: 'Prefix:',
+              }),
+              ' ',
+              $prefix
+            ),
+            $('<div/>').append(
+              $('<label/>', {
+                for: field + '-suffix',
+                text: 'Suffix:',
+              }),
+              ' ',
+              $suffix
+            ),
+            $('<div/>').append(
+              $displayWrapper,
+              $('<label/>', {
+                for: field + '-wrapper',
+                text: 'Wrap field/title in <span>',
+              })
+            ),
+            $('<div/>').append($remove)
           );
           if (existing[field].hasOwnProperty('title') && parseInt(existing[field]['title'])) {
             $displayTitle.prop('checked', true);
