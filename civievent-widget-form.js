@@ -46,22 +46,16 @@
     $('.civievent-widget-custom-display-params').each( function() {
       $params = $(this);
       fillCustomDisplay($params);
-      var $showJson = $('<a/>', {
-        class: 'show-json',
-        text: 'Show JSON',
-        href: '#',
-        onclick: 'return false;',
-      });
-      $showJson.click({ item: $params, showJson: $showJson }, function(event) {
+
+      $params.next('.show-json').click({ item: $params }, function(event) {
         event.data.item.toggle();
-        if (event.data.showJson.html() == 'Show JSON') {
-          event.data.showJson.html('Hide JSON');
+        if ($(this).html() == 'Show JSON') {
+          $(this).html('Hide JSON');
         }
         else {
-          event.data.showJson.html('Show JSON');
+          $(this).html('Show JSON');
         }
       });
-      $(this).after($showJson);
     } );
     function removefield(field, $item) {
       try {

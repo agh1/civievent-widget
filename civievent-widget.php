@@ -53,8 +53,9 @@ add_action( 'widgets_init', function() {
  *                    - country bool 1 = display event country,
  *                    - admin_type string display type:
  *                    	'simple' (default) - use settings above for title, summary, etc.
- *                    	'custom' - use custom_display
+ *                    	'custom' - use custom_display and custom_filter
  *                    - custom_display string JSON of custom display options (see documentation).
+ *                    - custom_filter string JSON of custom filter options (see documentation).
  *                    All booleans default to false; any value makes them true.
  *
  * @return string The widget to drop into the post body.
@@ -133,6 +134,7 @@ class civievent_Widget extends WP_Widget {
 		'country' => false,
 		'divider' => ', ',
 		'custom_display' => '',
+		'custom_filter' => '',
 	);
 
 	/**
@@ -207,6 +209,7 @@ class civievent_Widget extends WP_Widget {
 
 		$standardDisplay = false;
 		if ( ! empty( $instance['custom_display'] ) && CRM_Utils_Array::value( 'admin_type', $instance ) === 'custom' ) {
+			// Get the custom display params.
 			$custom = json_decode( $instance['custom_display'], true );
 			foreach ( $custom as $name => $fieldAttrs ) {
 				// Make sure only legit fields are sent.
@@ -217,21 +220,45 @@ class civievent_Widget extends WP_Widget {
 			if ( empty( $custom ) ) {
 				$standardDisplay = true;
 			} else {
+				// Get custom filters.
+				$customFilters = json_decode( CRM_Utils_Array::value( 'custom_filter', $instance, '' ), true );
+				$filterParams = array(
+					'start_date' => array( '>=' => date( 'Y-m-d' ) ),
+					'is_public' => 1,
+					'options' => array(
+						'sort' => 'start_date ASC',
+						'limit' => CRM_Utils_Array::value( 'limit', $instance, 5 ),
+					),
+				);
+				$allCustomDisplayFields = self::getCustomDisplayTitles();
+				// Set filter params only if they're legit fields or options.
+				if ( is_array( $customFilters ) ) {
+					foreach ( $customFilters as $name => $val ) {
+						if ( 'custom' === $name ) {
+							foreach ( $val as $option => $optionVal ) {
+								if ( in_array( $option, $okOptions ) ) {
+									switch ( $option ) {
+										case 'limit':
+										case 'offset':
+										case 'sort':
+											$filterParams['options'][ $option ] = $optionVal;
+									}
+								}
+							}
+						} elseif ( array_key_exists( $name, $fields ) && ! array_key_exists( $name, $allCustomDisplayFields ) ) {
+							$filterParams[ $name ] = $val;
+						}
+					}
+				}
 				$fieldsToRetrieve = array_keys( $custom );
-				$customDisplayFields = array_intersect_key( self::getCustomDisplayTitles(), $custom );
+				$customDisplayFields = array_intersect_key( $allCustomDisplayFields, $custom );
 				foreach ( $customDisplayFields as $customDisplayField => $dontcare ) {
 					$fieldsToRetrieve = array_merge( $fieldsToRetrieve, self::getCustomDisplayField( $customDisplayField ) );
 				}
+				// Return fields should be based on the custom_display only.
+				$filterParams['return'] = array_unique( $fieldsToRetrieve );
 				try {
-					$eventsCustom = civicrm_api3('Event', 'get', array(
-						'return' => array_unique( $fieldsToRetrieve ),
-						'start_date' => array( '>=' => date( 'Y-m-d' ) ),
-						'is_public' => 1,
-						'options' => array(
-							'sort' => 'start_date ASC',
-							'limit' => CRM_Utils_Array::value( 'limit', $instance, 5 ),
-						),
-					));
+					$eventsCustom = civicrm_api3( 'Event', 'get', $filterParams );
 					if ( ! empty( $eventsCustom['values'] ) ) {
 						$content = '<div class="civievent-widget-list civievent-widget-custom-display">';
 						$index = 0;
@@ -262,6 +289,8 @@ class civievent_Widget extends WP_Widget {
 							$content .= '</div>';
 						}
 						$content .= '</div>';
+					} else {
+						$content = '';
 					}
 				} catch (CiviCRM_API3_Exception $e) {
 					// TODO: log the error.
@@ -376,7 +405,8 @@ class civievent_Widget extends WP_Widget {
 			}
 		}
 
-		$fields = $this->getFields();
+		$fields = array_reverse( array_unique( array_reverse( $this->getFields() ) ) );
+
 		if ( ! empty( $fields ) ) {
 			$fieldSelect = '<select name="getfields-' . $this->get_field_name( 'custom-display' ) . '" class="civievent-widget-getfields widefat">';
 			$fieldSelect .= '<option value="">' . __( '- Select a field to add -', 'civievent-widget' ) . '</option>';
@@ -439,8 +469,12 @@ class civievent_Widget extends WP_Widget {
 					<label for="<?php echo $this->get_field_id( 'custom_display' ); ?>"><?php _e( 'Custom display fields:', 'civievent-widget' ); ?></label>
 					<?php echo $fieldSelect; ?>
 					<input class="widefat civievent-widget-custom-display-params" id="<?php echo $this->get_field_id( 'custom_display' ); ?>" name="<?php echo $this->get_field_name( 'custom_display' ); ?>" type="text" value="<?php echo esc_attr( $custom_display ); ?>" />
+					<a class="show-json" href="#" onclick="return false;">Show JSON</a>
 					<p class="civievent-widget-custom-display-ui"></p>
 				</div>
+				<p>
+					<label for="<?php echo $this->get_field_id( 'custom_filter' ); ?>"><?php _e( 'Custom API filter:', 'civievent-widget' ); ?></label>
+					<input class="widefat" id="<?php echo $this->get_field_id( 'custom_filter' ); ?>" name="<?php echo $this->get_field_name( 'custom_filter' ); ?>" type="text" value="<?php echo esc_attr( $custom_filter ); ?>" />
 			</div>
 		</div>
 		<?php
@@ -471,6 +505,7 @@ class civievent_Widget extends WP_Widget {
 		if ( isset( $new_instance['divider'] ) ) { $instance['divider'] = $new_instance['divider']; }
 		$instance['offset'] = ( ! empty( $new_instance['offset'] ) ) ? intval( strip_tags( $new_instance['offset'] ) ) : 0;
 		$instance['custom_display'] = ( ! empty( $new_instance['custom_display'] ) ) ? $new_instance['custom_display'] : '';
+		$instance['custom_filter'] = ( ! empty( $new_instance['custom_filter'] ) ) ? $new_instance['custom_filter'] : '';
 
 		return $instance;
 	}
@@ -603,6 +638,9 @@ class civievent_Widget extends WP_Widget {
 					foreach ( $fields['values'] as $name => $info ) {
 						$prefix = empty($info['groupTitle']) ? '' : $info['groupTitle'] . ': ';
 						$return[ $name ] = $prefix . CRM_Utils_Array::value( 'title', $info, $name );
+						if ( $name != CRM_Utils_Array::value( 'name', $info, $name ) ) {
+							$return[ $info['name'] ] = $prefix . CRM_Utils_Array::value( 'title', $info, $name );
+						}
 					}
 				}
 			} catch (CiviCRM_API3_Exception $e) {
@@ -627,11 +665,11 @@ class civievent_Widget extends WP_Widget {
 	public static function getCustomDisplayField( $field, $event = array() ) {
 		$reqs = array(
 			'event_title_infolink' => array(
-				'event_title',
+				'title',
 				'id',
 			),
 			'event_title_reglink' => array(
-				'event_title',
+				'title',
 				'id',
 			),
 			'registration_link_text_reglink' => array(
