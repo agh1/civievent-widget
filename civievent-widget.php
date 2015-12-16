@@ -121,6 +121,7 @@ class civievent_Widget extends WP_Widget {
 		'title' => '',
 		'wtheme' => 'stripe',
 		'limit' => 5,
+		'admin_type' => 'simple',
 		'summary' => false,
 		'alllink' => false,
 		'city' => false,
@@ -201,7 +202,7 @@ class civievent_Widget extends WP_Widget {
 		$fields = $this->getFields();
 
 		$standardDisplay = false;
-		if ( ! empty( $instance['custom_display'] ) ) {
+		if ( ! empty( $instance['custom_display'] ) && CRM_Utils_Array::value( 'admin_type', $instance ) === 'custom' ) {
 			$custom = json_decode( $instance['custom_display'], true );
 			foreach ( $custom as $name => $fieldAttrs ) {
 				// Make sure only legit fields are sent.
@@ -358,6 +359,10 @@ class civievent_Widget extends WP_Widget {
 		wp_enqueue_script( 'civievent-widget-form', plugins_url( 'civievent-widget-form.js', __FILE__ ), array( 'jquery', 'underscore' ) );
 		wp_enqueue_style( 'civievent-widget-form-css', plugins_url( 'civievent-widget-form.css', __FILE__ ) );
 
+		if ( empty( $instance['admin_type'] ) ) {
+			$instance['admin_type'] = 'simple';
+		}
+
 		// Outputs the options form on admin.
 		foreach ( $this->_defaultWidgetParams as $param => $val ) {
 			if ( false === $val ) {
@@ -393,10 +398,10 @@ class civievent_Widget extends WP_Widget {
 		<input class="widefat" id="<?php echo $this->get_field_id( 'limit' ); ?>" name="<?php echo $this->get_field_name( 'limit' ); ?>" type="text" value="<?php echo esc_attr( $limit ); ?>" />
 		</p>
 		<div class="civievent-widget-admin-sections">
-			<input type="radio" id="<?php echo $this->get_field_id( 'admin-type-simple' ); ?>" name="civievent-widget-admin-type" value="simple">
-			<input type="radio" id="<?php echo $this->get_field_id( 'admin-type-custom' ); ?>" name="civievent-widget-admin-type" value="custom">
-			<label for="<?php echo $this->get_field_id( 'admin-type-simple' ); ?>" class="civievent-widget-admin-type-label">Simple</label>
-			<label for="<?php echo $this->get_field_id( 'admin-type-custom' ); ?>" class="civievent-widget-admin-type-label">Custom</label>
+			<input type="radio" id="<?php echo $this->get_field_id( 'admin_type' ); ?>-simple" name="<?php echo $this->get_field_name( 'admin_type' );?>" value="simple" <?php checked( $admin_type, 'simple' ); ?>>
+			<input type="radio" id="<?php echo $this->get_field_id( 'admin_type' ); ?>-custom" name="<?php echo $this->get_field_name( 'admin_type' );?>" value="custom" <?php checked( $admin_type, 'custom' ); ?>>
+			<label for="<?php echo $this->get_field_id( 'admin_type' ); ?>-simple" class="civievent-widget-admin-type-label">Simple</label>
+			<label for="<?php echo $this->get_field_id( 'admin_type' ); ?>-custom" class="civievent-widget-admin-type-label">Custom</label>
 			<div class="civievent-widget-admin-simple">
 				<p><input type="checkbox" <?php checked( $city ); ?> name="<?php echo $this->get_field_name( 'city' ); ?>" id="<?php echo $this->get_field_id( 'city' ); ?>" class="checkbox">
 				<label for="<?php echo $this->get_field_id( 'city' ); ?>"><?php _e( 'Display city?', 'civievent-widget' ); ?></label>
@@ -453,6 +458,7 @@ class civievent_Widget extends WP_Widget {
 			$instance['wtheme'] = '';
 		}
 		$instance['limit'] = ( ! empty( $new_instance['limit'] ) ) ? intval( strip_tags( $new_instance['limit'] ) ) : 5;
+		$instance['admin_type'] = ( 'custom' == $new_instance['admin_type'] ) ? 'custom' : 'simple';
 		$instance['summary'] = isset( $new_instance['summary'] ) ? (bool) $new_instance['summary'] : false;
 		$instance['city'] = isset( $new_instance['city'] ) ? (bool) $new_instance['city'] : false;
 		$instance['state'] = ( 'none' === $new_instance['state'] ) ? null : $new_instance['state'];

@@ -3,7 +3,10 @@
     $('label.civievent-widget-admin-type-label').click( function() {
       $('#' + $(this).attr('for')).click();
     });
-    $('input[name="civievent-widget-admin-type"]').change( function() {
+    $('input[name^="widget-civievent-widget["][name$="][admin_type]"]:checked').each( function() {
+      adminTypeSwitch($(this));
+    })
+    $('input[name^="widget-civievent-widget["][name$="][admin_type]"]').change( function() {
       adminTypeSwitch($(this));
     });
     function adminTypeSwitch($field) {
@@ -23,11 +26,6 @@
         return true;
       }
       $fill = $(this).next('input');
-      // existing = $fill.val().replace(/ /g, '');
-      // existing = existing.split(',');
-      // existing.push($(this).val());
-      // existing = _.compact(_.uniq(existing));
-      // $fill.val(existing.join(', '));
       var existing = {};
       try {
         existing = JSON.parse($fill.val());
@@ -47,14 +45,6 @@
     } );
     $('.civievent-widget-custom-display-params').each( function() {
       fillCustomDisplay($(this));
-      if ($(this).val().length > 2) {
-        $(this).closest('.civievent-widget-admin-sections').children('input[name="civievent-widget-admin-type"][value="custom"]').click();
-      }
-      else {
-        $(this).closest('.civievent-widget-admin-sections').children('input[name="civievent-widget-admin-type"][value="simple"]').click();
-      }
-      // var stuff = 'test';
-      // $(this).next('.civievent-widget-custom-display-ui').html(stuff);
     } );
     function removefield(field, $item) {
       try {
@@ -157,18 +147,6 @@
             $('<br/>'),
             $remove
           );
-          // $('<br/>').appendTo($fieldui);
-          // $('<input/>', {
-          //   type: 'checkbox',
-          //   name: field + '-title',
-          // }).appendTo($fieldui);
-          // $('<label/>', {
-          //   for: field + '-title',
-          //   text: 'Display title?',
-          // }).appendTo($fieldui);
-          // $ui.append('<span class="field-custom-ui field-custom-ui-' + field + '"></span>');
-          // var $fieldui = $ui.children('.field-custom-ui-' + field);
-          // $fieldui.append(fieldTitle + '<br/><input type="checkbox" name="' + field + '-title"><label for="' + field + '-title">Display title?</label>');
           if (existing[field].hasOwnProperty('title') && parseInt(existing[field]['title'])) {
             $displayTitle.prop('checked', true);
           }
