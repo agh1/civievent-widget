@@ -136,12 +136,11 @@ class civievent_single_Widget extends civievent_Widget {
 			$infoLink = CRM_Utils_System::url( 'civicrm/event/info', "reset=1&id={$event['id']}" );
 			if ( empty( $instance['title'] ) ) {
 				$title = apply_filters( 'widget_title', $event['title'] );
-				$content = "<h3 class=\"title widget-title civievent-single-widget-title\"><a href=\"$infoLink\">$title</a></h3>";
+				$title = "<a href=\"$infoLink\">" . apply_filters( 'widget_title', $event['title'] ) . '</a>';
+				$content = '';
 			} else {
 				$title = apply_filters( 'widget_title', $instance['title'] );
-				$content = "<h3 class=\"title widget-title civievent-single-widget-title\">$title</h3>";
-				$content .= '<div class="civievent-widget-single-title"><a href="' . $infoLink . '">';
-				$content .= $event['title'] . '</a></div>';
+				$content = "<div class=\"civievent-widget-single-title\"><a href=\"$infoLink\">{$event['title']}</a></div>";
 			}
 
 			if ( ! empty($event['summary'] ) ) {
@@ -155,11 +154,10 @@ class civievent_single_Widget extends civievent_Widget {
 				$viewall = CRM_Utils_System::url( 'civicrm/event/ical', 'reset=1&list=1&html=1' );
 				$content .= "<div class=\"civievent-widget-single-viewall\"><a href=\"$viewall\">" . ts( 'View all' ) . '</a></div>';
 			}
+		} else {
+			return;
 		}
-		$classes = array( 'civievent-widget' );
-		if ( ! self::$_isShortcode ) {
-			$classes[] = 'widget';
-		}
+		$classes = array();
 		$classes[] = ( strlen( $instance['wtheme'] ) ) ? "civievent-widget-single-{$instance['wtheme']}" : 'civievent-widget-single-custom';
 
 		foreach ( $classes as &$class ) {
@@ -169,9 +167,13 @@ class civievent_single_Widget extends civievent_Widget {
 
 		wp_enqueue_style( 'civievent-widget-Stylesheet' );
 		if ( self::$_isShortcode ) {
-			return "<div class=\"$classes\">$content</div>";
+			$content = "<h3 class=\"title widget-title civievent-single-widget-title\">$title</h3>$content";
+			return "<div class=\"civievent-widget $classes\">$content</div>";
 		} else {
+			echo $args['before_widget'];
+			echo $args['before_title'] . $title . $args['after_title'];
 			echo "<div class=\"$classes\">$content</div>";
+			echo $args['after_widget'];
 		}
 	}
 
