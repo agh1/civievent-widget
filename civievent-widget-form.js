@@ -13,12 +13,12 @@
       $field.siblings('label[for!="' + $field.attr('id') + '"]').removeClass('selectedTab');
       $field.siblings('label[for="' + $field.attr('id') + '"]').addClass('selectedTab');
       if ($field.val() == 'custom') {
-        $field.siblings('.civievent-widget-admin-custom').show();
-        $field.siblings('.civievent-widget-admin-simple').hide();
+        $field.siblings('.civievent-widget-admin-custom').addClass('selectedTab');
+        $field.siblings('.civievent-widget-admin-simple').removeClass('selectedTab');
       }
       else {
-        $field.siblings('.civievent-widget-admin-simple').show();
-        $field.siblings('.civievent-widget-admin-custom').hide();
+        $field.siblings('.civievent-widget-admin-simple').addClass('selectedTab');
+        $field.siblings('.civievent-widget-admin-custom').removeClass('selectedTab');
       }
     }
     $('.civievent-widget-getfields').change( function() {

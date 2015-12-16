@@ -216,7 +216,7 @@ class civievent_Widget extends WP_Widget {
 				$fieldsToRetrieve = array_keys( $custom );
 				$customDisplayFields = array_intersect_key( self::getCustomDisplayTitles(), $custom );
 				foreach ( $customDisplayFields as $customDisplayField => $dontcare ) {
-					$fieldsToRetrieve += self::getCustomDisplayField( $customDisplayField );
+					$fieldsToRetrieve = array_merge( $fieldsToRetrieve, self::getCustomDisplayField( $customDisplayField ) );
 				}
 				try {
 					$eventsCustom = civicrm_api3('Event', 'get', array(
@@ -430,13 +430,13 @@ class civievent_Widget extends WP_Widget {
 				</p>
 			</div>
 			<div class="civievent-widget-admin-custom">
-				<p>
-				<label for="<?php echo $this->get_field_id( 'custom_display' ); ?>"><?php _e( 'Custom display fields:', 'civievent-widget' ); ?></label>
-				<?php echo $fieldSelect; ?>
-				<input class="widefat civievent-widget-custom-display-params" id="<?php echo $this->get_field_id( 'custom_display' ); ?>" name="<?php echo $this->get_field_name( 'custom_display' ); ?>" type="text" value="<?php echo esc_attr( $custom_display ); ?>" />
-				<?php _e( 'ADVANCED: If you want to display additional or different fields, add their names here using the drop-down.', 'civievent-widget' ); ?>
-				<span class="civievent-widget-custom-display-ui"></span>
-				</p>
+				<p><?php _e( 'ADVANCED: If you want to display additional or different fields, add their names here using the drop-down.', 'civievent-widget' ); ?></p>
+				<div>
+					<label for="<?php echo $this->get_field_id( 'custom_display' ); ?>"><?php _e( 'Custom display fields:', 'civievent-widget' ); ?></label>
+					<?php echo $fieldSelect; ?>
+					<input class="widefat civievent-widget-custom-display-params" id="<?php echo $this->get_field_id( 'custom_display' ); ?>" name="<?php echo $this->get_field_name( 'custom_display' ); ?>" type="text" value="<?php echo esc_attr( $custom_display ); ?>" />
+					<p class="civievent-widget-custom-display-ui"></p>
+				</div>
 			</div>
 		</div>
 		<?php
@@ -605,7 +605,8 @@ class civievent_Widget extends WP_Widget {
 				// TODO: log the error.
 				$error = $e->getMessage();
 			}
-			$return += self::getCustomDisplayTitles();
+			$return = array_merge( $return, self::getCustomDisplayTitles() );
+			asort( $return );
 			$this->_eventFields = $return;
 		}
 		return $this->_eventFields;
