@@ -43,7 +43,7 @@
  */
 function civievent_single_widget_shortcode( $atts ) {
 	$widget = new civievent_single_Widget( true );
-	$defaults = $widget::$_defaultWidgetParams;
+	$defaults = $widget->_defaultWidgetParams;
 
 	// Taking care of those who take things literally.
 	if ( is_array( $atts ) ) {
@@ -74,7 +74,7 @@ class civievent_single_Widget extends civievent_Widget {
 	 *
 	 * @var array $_defaultWidgetParams Default parameters
 	 */
-	static $_defaultWidgetParams = array(
+	public $_defaultWidgetParams = array(
 		'title' => '',
 		'wtheme' => 'standard',
 		'alllink' => false,
@@ -98,7 +98,7 @@ class civievent_single_Widget extends civievent_Widget {
 		);
 
 		if ( $shortcode ) {
-			self::$_isShortcode = true;
+			$this->_isShortcode = true;
 		}
 		$this->commonConstruct();
 	}
@@ -112,7 +112,7 @@ class civievent_single_Widget extends civievent_Widget {
 	public function widget( $args, $instance ) {
 		if ( ! function_exists( 'civicrm_initialize' ) ) { return; }
 
-		if ( version_compare( self::$_civiversion, '4.3.alpha1' ) < 0 ) { return; }
+		if ( version_compare( $this->_civiversion, '4.3.alpha1' ) < 0 ) { return; }
 
 		try {
 			$event = civicrm_api3( 'Event', 'getsingle', array(
@@ -146,7 +146,7 @@ class civievent_single_Widget extends civievent_Widget {
 			if ( ! empty($event['summary'] ) ) {
 				$content .= "<div class=\"civievent-widget-single-summary\">{$event['summary']}</div>";
 			}
-			$content .= self::dateFix( $event, 'civievent-widget-single' );
+			$content .= $this->dateFix( $event, 'civievent-widget-single' );
 			$content .= self::locFix( $event, $event['id'], $instance, 'civievent-widget-single' );
 			$content .= self::regFix( $event, $event['id'], 'civievent-widget-single' );
 
@@ -166,7 +166,7 @@ class civievent_single_Widget extends civievent_Widget {
 		$classes = implode( ' ', $classes );
 
 		wp_enqueue_style( 'civievent-widget-Stylesheet' );
-		if ( self::$_isShortcode ) {
+		if ( $this->_isShortcode ) {
 			$content = "<h3 class=\"title widget-title civievent-single-widget-title\">$title</h3>$content";
 			return "<div class=\"civievent-widget $classes\">$content</div>";
 		} else {
@@ -187,11 +187,11 @@ class civievent_single_Widget extends civievent_Widget {
 			<h3><?php _e( 'You must enable and install CiviCRM to use this plugin.', 'civievent-widget' ); ?></h3>
 			<?php
 			return;
-		} elseif ( version_compare( self::$_civiversion, '4.3.alpha1' ) < 0 ) { ?>
-			<h3><?php print __( 'You must enable and install CiviCRM 4.3 or higher to use this plugin.	You are currently running CiviCRM ', 'civievent-widget' ) . self::$_civiversion; ?></h3>
+		} elseif ( version_compare( $this->_civiversion, '4.3.alpha1' ) < 0 ) { ?>
+			<h3><?php print __( 'You must enable and install CiviCRM 4.3 or higher to use this plugin.	You are currently running CiviCRM ', 'civievent-widget' ) . $this->_civiversion; ?></h3>
 			<?php
 			return;
-		} elseif ( strlen( self::$_civiBasePage ) < 1 ) {
+		} elseif ( strlen( $this->_civiBasePage ) < 1 ) {
 			$adminUrl = CRM_Utils_System::url( 'civicrm/admin/setting/uf', 'reset=1' );
 			?><div class="civievent-widget-nobasepage">
 				<h3><?php _e( 'No Base Page Set', 'civievent-widget' ); ?></h3>
@@ -203,7 +203,7 @@ class civievent_single_Widget extends civievent_Widget {
 		}
 
 		// Outputs the options form on admin.
-		foreach ( self::$_defaultWidgetParams as $param => $val ) {
+		foreach ( $this->_defaultWidgetParams as $param => $val ) {
 			if ( false === $val ) {
 				$$param = isset( $instance[ $param ] ) ? (bool) $instance[ $param ] : false;
 			} else {
