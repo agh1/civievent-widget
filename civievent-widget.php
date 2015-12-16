@@ -470,7 +470,7 @@ class civievent_Widget extends WP_Widget {
 		$instance['alllink'] = isset( $new_instance['alllink'] ) ? (bool) $new_instance['alllink'] : false;
 		if ( isset( $new_instance['divider'] ) ) { $instance['divider'] = $new_instance['divider']; }
 		$instance['offset'] = ( ! empty( $new_instance['offset'] ) ) ? intval( strip_tags( $new_instance['offset'] ) ) : 0;
-		$instance['custom_display'] = ( ! empty( $new_instance['custom_display'] ) ) ? strip_tags( $new_instance['custom_display'] ) : '';
+		$instance['custom_display'] = ( ! empty( $new_instance['custom_display'] ) ) ? $new_instance['custom_display'] : '';
 
 		return $instance;
 	}
