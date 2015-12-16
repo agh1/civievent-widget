@@ -47,3 +47,17 @@
 .civievent-widget-admin-sections > input {
   display: none;
 }
+
+.field-custom-ui > * {
+  display: none;
+}
+
+.field-custom-ui.active-ui-field > *,
+.field-custom-ui > .fieldtitle {
+  display: block;
+}
+
+.field-custom-ui > .fieldtitle {
+  cursor: pointer;
+  font-weight: bold;
+}

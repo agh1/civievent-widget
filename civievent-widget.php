@@ -50,7 +50,11 @@ add_action( 'widgets_init', function() {
  *                    	'abbreviate' - abbreviation
  *                    	'full' - full name
  *                    	'none' (default) - display nothing
- *                    - country bool 1 = display event country.
+ *                    - country bool 1 = display event country,
+ *                    - admin_type string display type:
+ *                    	'simple' (default) - use settings above for title, summary, etc.
+ *                    	'custom' - use custom_display
+ *                    - custom_display string JSON of custom display options (see documentation).
  *                    All booleans default to false; any value makes them true.
  *
  * @return string The widget to drop into the post body.
