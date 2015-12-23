@@ -3,7 +3,7 @@ Contributors: agh1
 Tags: civicrm, events, event, nonprofit, crm, calendar
 Requires at least: 3.3
 Tested up to: 4.4
-Stable tag: 3.0
+Stable tag: 3.1
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
@@ -89,6 +89,9 @@ You can also adjust the limit, sort, or offset by adding items under `options`. 
 **Note:** CiviCRM's API takes JSON arrays in some cases.  A JSON array is denoted by square brackets.  A shortcode is denoted by square brackets.  If you use the `custom_filter` shortcode parameter to set a custom API filter, you'll have trouble if you use square brackets for arrays.  As a workaround, write arrays as objects with sequentially numbered properties: `{"0": "First Thing", "1": "Second Thing"}` instead of `["First Thing","Second Thing"]`.
 
 == Changelog ==
+
+= 3.1 =
+* Fixed bug where admin form tabs weren't displaying in Chrome.
 
 = 3.0 =
 * Made widgets render with default widget wrapper elements.
