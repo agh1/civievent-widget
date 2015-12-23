@@ -77,7 +77,7 @@
       $item.val(JSON.stringify(existing));
       fillCustomDisplay($item, field);
     }
-    function fillCustomDisplay($item, activeUiField = null) {
+    function fillCustomDisplay($item, activeUiField) {
       try {
         existing = JSON.parse($item.val());
       } catch (e) {
