@@ -5,7 +5,7 @@
     });
     $('input[name^="widget-civievent-widget["][name$="][admin_type]"]:checked').each( function() {
       adminTypeSwitch($(this));
-    })
+    });
     $('input[name^="widget-civievent-widget["][name$="][admin_type]"]').change( function() {
       adminTypeSwitch($(this));
     });
@@ -37,6 +37,7 @@
         prefix: null,
         suffix: null,
         wrapper: 1,
+        'display-empty': 0,
       };
       $fill.val(JSON.stringify(existing));
       fillCustomDisplay($fill);
@@ -132,6 +133,13 @@
             var isChecked = $(this).prop('checked') ? 1 : 0;
             setFieldValue(event.data.field, event.data.item, 'wrapper', isChecked);
           });
+          var $displayEmpty = $('<input/>', {
+            type: 'checkbox',
+            name: field + '-display-empty',
+          }).change({ field: field, item: $item }, function(event) {
+            var isChecked = $(this).prop('checked') ? 1 : 0;
+            setFieldValue(event.data.field, event.data.item, 'display-empty', isChecked);
+          });
           var $remove = $('<a/>', {
             class: 'removefield',
             href: '#',
@@ -170,6 +178,13 @@
               $('<label/>', {
                 for: field + '-wrapper',
                 text: 'Wrap field/title in <span>',
+              })
+            ),
+            $('<div/>').append(
+              $displayEmpty,
+              $('<label/>', {
+                for: field + '-display-empty',
+                text: 'Display even if empty',
               })
             ),
             $('<div/>').append($remove)

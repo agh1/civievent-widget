@@ -276,7 +276,11 @@ class civievent_Widget extends WP_Widget {
 									if ( array_key_exists( $name, $customDisplayFields ) ) {
 										$fieldVal = self::getCustomDisplayField( $name, $event );
 									} else {
-										continue;
+										if ( empty( $fieldAttrs['display-empty'] ) ) {
+											continue;
+										} else {
+											$fieldVal = '';
+										}
 									}
 								} else {
 									$fieldVal = $event[ $name ];
