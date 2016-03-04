@@ -282,6 +282,11 @@ class civievent_Widget extends WP_Widget {
 											$fieldVal = '';
 										}
 									}
+								} elseif ( in_array( $name, array(
+									'start_date',
+									'end_date',
+								) ) ) {
+									$fieldVal = CRM_Utils_Date::customFormat( $event[ $name ], $this->_dateFormat );
 								} else {
 									$fieldVal = $event[ $name ];
 								}
