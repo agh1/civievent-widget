@@ -255,6 +255,11 @@ class civievent_Widget extends WP_Widget {
 				foreach ( $customDisplayFields as $customDisplayField => $dontcare ) {
 					$fieldsToRetrieve = array_merge( $fieldsToRetrieve, self::getCustomDisplayField( $customDisplayField ) );
 				}
+
+				// Problem with 4.6: API won't return single-event-type custom
+				// fields without the event_type_id
+				$fieldsToRetrieve[] = 'event_type_id';
+
 				// Return fields should be based on the custom_display only.
 				$filterParams['return'] = array_unique( $fieldsToRetrieve );
 				try {
@@ -638,7 +643,7 @@ class civievent_Widget extends WP_Widget {
 					foreach ( $fields['values'] as $name => $info ) {
 						$prefix = empty($info['groupTitle']) ? '' : $info['groupTitle'] . ': ';
 						$return[ $name ] = $prefix . CRM_Utils_Array::value( 'title', $info, $name );
-						if ( $name != CRM_Utils_Array::value( 'name', $info, $name ) ) {
+						if ( CRM_Utils_Array::value( 'name', $info, $name ) != $name ) {
 							$return[ $info['name'] ] = $prefix . CRM_Utils_Array::value( 'title', $info, $name );
 						}
 					}
