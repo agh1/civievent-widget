@@ -201,6 +201,9 @@
           if (existing[field].hasOwnProperty('wrapper') && parseInt(existing[field]['wrapper'])) {
             $displayWrapper.prop('checked', true);
           }
+          if (existing[field].hasOwnProperty('display-empty') && parseInt(existing[field]['display-empty'])) {
+            $displayEmpty.prop('checked', true);
+          }
         }
       }
     }
