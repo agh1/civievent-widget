@@ -220,6 +220,12 @@ class civievent_Widget extends WP_Widget {
 			if ( empty( $custom ) ) {
 				$standardDisplay = true;
 			} else {
+				$okOptions = array(
+					'limit',
+					'offset',
+					'sort',
+				);
+
 				// Get custom filters.
 				$customFilters = json_decode( CRM_Utils_Array::value( 'custom_filter', $instance, '' ), true );
 				$filterParams = array(
@@ -234,7 +240,7 @@ class civievent_Widget extends WP_Widget {
 				// Set filter params only if they're legit fields or options.
 				if ( is_array( $customFilters ) ) {
 					foreach ( $customFilters as $name => $val ) {
-						if ( 'custom' === $name ) {
+						if ( 'options' === $name ) {
 							foreach ( $val as $option => $optionVal ) {
 								if ( in_array( $option, $okOptions ) ) {
 									switch ( $option ) {
