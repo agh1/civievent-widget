@@ -295,7 +295,7 @@ class civievent_Widget extends WP_Widget {
 								 	$rowField .= empty( $fieldAttrs['wrapper'] ) ? "{$fields[ $name ]}: " : "<span class=\"civievent-widget-custom-label\">{$fields[ $name ]}: </span>";
 								}
 								$rowField .= empty( $fieldAttrs['wrapper'] ) ? $fieldVal : "<span class=\"civievent-widget-custom-value\">$fieldVal</span>";
-								$rowField .= empty( $fieldAttrs['suffix'] ) ? '' : wp_kses( $fieldAttrs['prefix'], wp_kses_allowed_html( 'post' ) );
+								$rowField .= empty( $fieldAttrs['suffix'] ) ? '' : wp_kses( $fieldAttrs['suffix'], wp_kses_allowed_html( 'post' ) );
 
 								$rowClass = sanitize_html_class( "civievent-widget-custom-display-$name" );
 								$content .= empty( $fieldAttrs['wrapper'] ) ? "$rowField\n" : "<span class=\"$rowClass\">$rowField</span>\n";
