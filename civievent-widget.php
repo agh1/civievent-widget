@@ -56,6 +56,7 @@ add_action( 'widgets_init', function() {
  *                    	'custom' - use custom_display and custom_filter
  *                    - custom_display string JSON of custom display options (see documentation).
  *                    - custom_filter string JSON of custom filter options (see documentation).
+ *                    - event_type_id integer filter event listing using event type
  *                    All booleans default to false; any value makes them true.
  *
  * @return string The widget to drop into the post body.
@@ -135,6 +136,7 @@ class civievent_Widget extends WP_Widget {
 		'divider' => ', ',
 		'custom_display' => '',
 		'custom_filter' => '',
+		'event_type_id' => '',
 	);
 
 	/**
@@ -303,7 +305,9 @@ class civievent_Widget extends WP_Widget {
 
 		if ( $standardDisplay ) {
 			// Outputs the content of the widget.
-			$cal = CRM_Event_BAO_Event::getCompleteInfo();
+			// apply event type filter on standard output.
+			$event_type_id = !empty($instance['event_type_id']) ? $instance['event_type_id'] : NULL;
+			$cal = CRM_Event_BAO_Event::getCompleteInfo(NULL, $event_type_id);
 			$index = 0;
 			$content = '<div class="civievent-widget-list">';
 			foreach ( $cal as $event ) {
