@@ -89,14 +89,6 @@ You can also adjust the limit, sort, or offset by adding items under `options`. 
 
 **Note:** CiviCRM's API takes JSON arrays in some cases.  A JSON array is denoted by square brackets.  A shortcode is denoted by square brackets.  If you use the `custom_filter` shortcode parameter to set a custom API filter, you'll have trouble if you use square brackets for arrays.  As a workaround, write arrays as objects with sequentially numbered properties: `{"0": "First Thing", "1": "Second Thing"}` instead of `["First Thing","Second Thing"]`.
 
-== Screenshots ==
-
-1. An example of the CiviEvent List Widget.
-2. Widget administration for the CiviEvent List Widget in Simple mode.
-3. Widget administration for the CiviEvent List Widget in Custom mode.
-4. An example of the Single CiviEvent Widget.
-5. Widget administration for the Single CiviEvent Widget.
-
 == Changelog ==
 
 = 3.1 =
