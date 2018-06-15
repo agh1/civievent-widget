@@ -523,34 +523,53 @@ class civievent_Widget extends WP_Widget {
 	 * @param boolean $country Return country.
 	 */
 	public static function locationInfo( $eventId, $city = true, $state = null, $country = false ) {
-		$result = civicrm_api('Event', 'getsingle', array(
-			'version' => 3,
-			'id' => $eventId,
-			'is_show_location' => 1,
-			'return' => 'loc_block_id',
-			'api.LocBlock.getsingle' => array(
-				'id' => '$value.loc_block_id',
-				'api.Address.getsingle' => array( 'id' => '$value.address_id' ),
-			),
-		));
-
-		if ( ! empty( $result['is_error'] ) ) {
-			return array();
-		}
-
 		$return = array();
-		$loc = CRM_Utils_Array::value( 'api.Address.getsingle', CRM_Utils_Array::value( 'api.LocBlock.getsingle', $result, array() ), array() );
-		if ( $city ) {
-			$return['city'] = CRM_Utils_Array::value( 'city', $loc );
+
+		// Get the API names for each field we're potentially showing
+		$field_map = array(
+			'city' => 'city',
+			'state' => ( 'abbreviate' === $state ) ? 'state_province_id.abbreviation' : 'state_province_id.name',
+			'country' => 'country_id.name',
+		);
+
+		// Ignore the fields we don't need
+		foreach ( $field_map as $disp_field => $api_field ) {
+			if ( ! $$disp_field ) {
+				unset( $field_map[ $disp_field ] );
+			}
 		}
-		if ( $state ) {
-			$abbreviate = ( 'abbreviate' === $state ) ? 'abbreviate' : null;
-			$states = CRM_Core_BAO_Address::buildOptions( 'state_province_id', $abbreviate, array( 'country_id' => CRM_Utils_Array::value( 'country_id', $loc ) ) );
-			$return['state'] = CRM_Utils_Array::value( CRM_Utils_Array::value( 'state_province_id', $loc ), $states );
+
+		try {
+			$loc_block_id = civicrm_api3('Event', 'getvalue', array(
+				'return' => 'loc_block_id',
+				'id' => $eventId,
+				'is_show_location' => 1,
+			));
+
+			if ( empty( $loc_block_id ) ) {
+				return $return;
+			}
+
+			$address_id = civicrm_api3( 'LocBlock', 'getvalue', array(
+				'return' => 'address_id',
+				'id' => $loc_block_id,
+			));
+
+			if ( empty( $address_id ) ) {
+				return $return;
+			}
+
+			$loc = civicrm_api3( 'Address', 'getsingle', array(
+				'id' => $address_id,
+				'return' => array_values( $field_map ),
+			));
+
+		} catch (CiviCRM_API3_Exception $e) {
+			return $return;
 		}
-		if ( $country ) {
-			$countries = CRM_Core_BAO_Address::buildOptions( 'country_id', 'get' );
-			$return['country'] = CRM_Utils_Array::value( CRM_Utils_Array::value( 'country_id', $loc ), $countries );
+
+		foreach ( $field_map as $disp_field => $api_field ) {
+			$return[ $disp_field ] = $loc[ $api_field ];
 		}
 		return $return;
 	}
