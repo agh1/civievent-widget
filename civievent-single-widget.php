@@ -37,6 +37,7 @@
  *                    	'none' (default) - display nothing
  *                    - country bool 1 = display event country,
  *                    - offset int The number of events to skip (default: 0).
+ *                    - event_type_id int filter to a single event type.
  *                    All booleans default to false; any value makes them true.
  *
  * @return string The widget to drop into the post body.
@@ -83,6 +84,7 @@ class civievent_single_Widget extends civievent_Widget {
 		'country' => false,
 		'divider' => ', ',
 		'offset' => 0,
+		'event_type_id' => '',
 	);
 
 	/**
@@ -115,7 +117,7 @@ class civievent_single_Widget extends civievent_Widget {
 		if ( version_compare( $this->_civiversion, '4.3.alpha1' ) < 0 ) { return; }
 
 		try {
-			$event = civicrm_api3( 'Event', 'getsingle', array(
+			$event_args = array(
 				'sequential' => 1,
 				'is_active' => 1,
 				'is_public' => 1,
@@ -126,7 +128,11 @@ class civievent_single_Widget extends civievent_Widget {
 					'offset' => CRM_Utils_Array::value( 'offset', $instance, 0 ),
 				),
 				'start_date' => array( '>=' => date( 'Y-m-d' ) ),
-			) );
+			);
+			if ( ! empty( $instance['event_type_id'] ) ) {
+				$event_args['event_type_id'] = intval( $instance['event_type_id'] );
+			}
+			$event = civicrm_api3( 'Event', 'getsingle', $event_args );
 		} catch ( CiviCRM_API3_Exception $e ) {
 			error_log( 'CiviCRM API Error: ' . $e->getMessage() );
 		}
@@ -143,7 +149,7 @@ class civievent_single_Widget extends civievent_Widget {
 				$content = "<div class=\"civievent-widget-single-title\"><a href=\"$infoLink\">{$event['title']}</a></div>";
 			}
 
-			if ( ! empty($event['summary'] ) ) {
+			if ( ! empty( $event['summary'] ) ) {
 				$content .= "<div class=\"civievent-widget-single-summary\">{$event['summary']}</div>";
 			}
 			$content .= $this->dateFix( $event, 'civievent-widget-single' );
@@ -226,6 +232,10 @@ class civievent_single_Widget extends civievent_Widget {
 		<label for="<?php echo $this->get_field_id( 'offset' ); ?>"><?php _e( 'Offset:', 'civievent-widget' ); ?></label>
 		<input class="widefat" id="<?php echo $this->get_field_id( 'offset' ); ?>" name="<?php echo $this->get_field_name( 'offset' ); ?>" type="text" value="<?php echo esc_attr( $offset ); ?>" />
 		<?php _e( 'By default, the widget will show the first upcoming event starting today or in the future.  Enter an offset to skip one or more events: for example, an offset of 1 will skip the first event and display the second.', 'civievent-widget' ); ?>
+		</p>
+		<p>
+		<label for="<?php echo $this->get_field_id( 'event_type_id' ); ?>"><?php _e( 'Event type:', 'civievent-widget' ); ?></label>
+		<?php echo self::event_type_select( $this->get_field_name( 'event_type_id' ), $this->get_field_id( 'event_type_id' ), $event_type_id ); ?>
 		</p>
 		<p><input type="checkbox" <?php checked( $city ); ?> name="<?php echo $this->get_field_name( 'city' ); ?>" id="<?php echo $this->get_field_id( 'city' ); ?>" class="checkbox">
 		<label for="<?php echo $this->get_field_id( 'city' ); ?>"><?php _e( 'Display city?', 'civievent-widget' ); ?></label>

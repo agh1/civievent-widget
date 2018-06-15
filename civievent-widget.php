@@ -56,7 +56,7 @@ add_action( 'widgets_init', function() {
  *                    	'custom' - use custom_display and custom_filter
  *                    - custom_display string JSON of custom display options (see documentation).
  *                    - custom_filter string JSON of custom filter options (see documentation).
- *                    - event_type_id integer filter event listing using event type
+ *                    - event_type_id int filter the event listing to a single event type
  *                    All booleans default to false; any value makes them true.
  *
  * @return string The widget to drop into the post body.
