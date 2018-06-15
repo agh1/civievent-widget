@@ -2,8 +2,8 @@
 Contributors: agh1
 Tags: civicrm, events, event, nonprofit, crm, calendar
 Requires at least: 3.3
-Tested up to: 4.4
-Stable tag: 3.1
+Tested up to: 4.9
+Stable tag: 3.2
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
 
@@ -98,6 +98,10 @@ You can also adjust the limit, sort, or offset by adding items under `options`. 
 5. Widget administration for the Single CiviEvent Widget.
 
 == Changelog ==
+
+= 3.2 =
+* Fixed bug where events with no address would sometimes display the site's default address
+* Added support for filtering by event type on both widgets and shortcodes
 
 = 3.1 =
 * Fixed bug where admin form tabs weren't displaying in Chrome.
