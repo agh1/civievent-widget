@@ -295,8 +295,7 @@ class civievent_Widget extends WP_Widget {
 						$content = '';
 					}
 				} catch (CiviCRM_API3_Exception $e) {
-					// TODO: log the error.
-					$error = $e->getMessage();
+					CRM_Core_Error::debug_log_message( $e->getMessage() );
 				}
 			}
 		} else {
@@ -306,8 +305,8 @@ class civievent_Widget extends WP_Widget {
 		if ( $standardDisplay ) {
 			// Outputs the content of the widget.
 			// apply event type filter on standard output.
-			$event_type_id = !empty($instance['event_type_id']) ? $instance['event_type_id'] : NULL;
-			$cal = CRM_Event_BAO_Event::getCompleteInfo(NULL, $event_type_id);
+			$event_type_id = empty( $instance['event_type_id'] ) ? null : intval( $instance['event_type_id'] );
+			$cal = CRM_Event_BAO_Event::getCompleteInfo( null, $event_type_id );
 			$index = 0;
 			$content = '<div class="civievent-widget-list">';
 			foreach ( $cal as $event ) {
@@ -366,6 +365,58 @@ class civievent_Widget extends WP_Widget {
 			$content = "$wTitle<div class=\"$classes\">$content</div>";
 			echo $args['before_widget'] . $content . $args['after_widget'];
 		}
+	}
+
+	/**
+	 * Format a select list of event types
+	 *
+	 * @param string $field_name
+	 *   The name for the event type field.
+	 * @param string $field_id
+	 *   The ID of the event type field.
+	 * @param string $event_type_id
+	 *   The event type currently in the instance
+	 * @return string
+	 *   A formatted `<select>` element with all the options.
+	 */
+	protected static function event_type_select( $field_name, $field_id, $event_type_id ) {
+		if ( empty( $event_type_id ) ) {
+			$event_type_id = 0;
+		}
+
+		// Always show the "Any" option
+		$options = array(
+			0 => __( 'Any', 'civievent-widget' ),
+		);
+
+		// Look up event types
+		try {
+			$event_types = civicrm_api3( 'Event', 'getoptions', array(
+				'field' => 'event_type_id',
+				'context' => 'search',
+			));
+			if ( ! empty( $event_types['values'] ) ) {
+				$options += $event_types['values'];
+			}
+		} catch ( CiviCRM_API3_Exception $e ) {
+			CRM_Core_Error::debug_log_message( $e->getMessage() );
+		}
+
+		// Render options from array of values
+		$rendered_options = '';
+		foreach ( $options as $id => $label ) {
+			$selected = selected( $event_type_id, $id, false );
+			$rendered_options .= <<<HEREDOC
+			<option value="$id" $selected>$label</option>
+HEREDOC;
+		}
+
+		// Return a formatted `<select>` element
+		return <<<HEREDOC
+		<select name="$field_name" id="$field_id">
+$rendered_options
+		</select>
+HEREDOC;
 	}
 
 	/**
@@ -441,6 +492,10 @@ class civievent_Widget extends WP_Widget {
 			<label for="<?php echo $this->get_field_id( 'admin_type' ); ?>-simple" class="civievent-widget-admin-type-label">Simple</label>
 			<label for="<?php echo $this->get_field_id( 'admin_type' ); ?>-custom" class="civievent-widget-admin-type-label">Custom</label>
 			<div class="civievent-widget-admin-simple">
+				<p>
+				<label for="<?php echo $this->get_field_id( 'event_type_id' ); ?>"><?php _e( 'Event type:', 'civievent-widget' ); ?></label>
+					<?php echo self::event_type_select( $this->get_field_name( 'event_type_id' ), $this->get_field_id( 'event_type_id' ), $event_type_id ); ?>
+				</p>
 				<p><input type="checkbox" <?php checked( $city ); ?> name="<?php echo $this->get_field_name( 'city' ); ?>" id="<?php echo $this->get_field_id( 'city' ); ?>" class="checkbox">
 				<label for="<?php echo $this->get_field_id( 'city' ); ?>"><?php _e( 'Display city?', 'civievent-widget' ); ?></label>
 				</p>
@@ -502,6 +557,7 @@ class civievent_Widget extends WP_Widget {
 		$instance['limit'] = ( ! empty( $new_instance['limit'] ) ) ? intval( strip_tags( $new_instance['limit'] ) ) : 5;
 		$instance['admin_type'] = ( 'custom' == $new_instance['admin_type'] ) ? 'custom' : 'simple';
 		$instance['summary'] = isset( $new_instance['summary'] ) ? (bool) $new_instance['summary'] : false;
+		$instance['event_type_id'] = ( 0 === $new_instance['event_type_id'] ) ? null : $new_instance['event_type_id'];
 		$instance['city'] = isset( $new_instance['city'] ) ? (bool) $new_instance['city'] : false;
 		$instance['state'] = ( 'none' === $new_instance['state'] ) ? null : $new_instance['state'];
 		$instance['country'] = isset( $new_instance['country'] ) ? (bool) $new_instance['country'] : false;
@@ -667,8 +723,7 @@ class civievent_Widget extends WP_Widget {
 					}
 				}
 			} catch (CiviCRM_API3_Exception $e) {
-				// TODO: log the error.
-				$error = $e->getMessage();
+				CRM_Core_Error::debug_log_message( $e->getMessage() );
 			}
 			$return = array_merge( $return, self::getCustomDisplayTitles() );
 			asort( $return );
