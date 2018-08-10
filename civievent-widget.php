@@ -357,10 +357,8 @@ class civievent_Widget extends WP_Widget {
 		if ( empty( $customDisplay ) ) {
 			return array(
 				'return' => array(
-					'url',
 					'title',
 					'summary',
-					'event_id',
 					'start_date',
 					'end_date',
 					'is_online_registration',
@@ -433,19 +431,19 @@ class civievent_Widget extends WP_Widget {
 	 */
 	protected function standardEvent( $event, $instance, $index ) {
 		$oe = ($index&1) ? 'odd' : 'even';
-		$url = CRM_Utils_Array::value( 'url', $event );
+		$url = CRM_Utils_System::url( 'civicrm/event/info', 'reset=1&id=' . $event['id'], true, null, false );
 		$title = CRM_Utils_Array::value( 'title', $event );
 		$summary = CRM_Utils_Array::value( 'summary', $event, '' );
 		$content = "<div class=\"civievent-widget-event civievent-widget-event-$oe civievent-widget-event-$index\">";
 		$content .= $this->dateFix( $event, 'civievent-widget-event' );
 		if ( $title ) {
 			$content .= ' <span class="civievent-widget-event-title">';
-			$content .= self::locFix( $event, $event['event_id'], $instance, 'civievent-widget-event' );
+			$content .= self::locFix( $event, $event['id'], $instance, 'civievent-widget-event' );
 			$content .= '<span class="civievent-widget-infolink">';
 			$content .= ($url) ? "<a href=\"$url\">$title</a>" : $title;
 			$content .= '</span>';
 
-			$content .= self::regFix( $event, $event['event_id'], 'civievent-widget' );
+			$content .= self::regFix( $event, $event['id'], 'civievent-widget' );
 
 			if ( $instance['summary'] ) {
 				$content .= "<span class=\"civievent-widget-event-summary\">$summary</span>";
