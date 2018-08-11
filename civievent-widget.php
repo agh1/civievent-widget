@@ -134,8 +134,8 @@ class civievent_Widget extends WP_Widget {
 		'state' => 'none',
 		'country' => false,
 		'divider' => ', ',
-		'custom_display' => '{}',
-		'custom_filter' => '{}',
+		'custom_display' => '',
+		'custom_filter' => '',
 		'event_type_id' => '',
 	);
 
@@ -288,7 +288,7 @@ class civievent_Widget extends WP_Widget {
 	 */
 	protected function validCustomDisplayFields ( $instance ) {
 		$fields = $this->getFields();
-		$customDisplay = json_decode( $instance['custom_display'], true );
+		$customDisplay = json_decode( empty( $instance['custom_display'] ) ? '{}' : $instance['custom_display'], true );
 		foreach ( $customDisplay as $name => $fieldAttrs ) {
 			// Make sure only legit fields are sent.
 			if ( empty( $fields[ $name ] ) ) {
@@ -309,7 +309,7 @@ class civievent_Widget extends WP_Widget {
 	protected function validCustomFilterFields ( $instance ) {
 		$fields = $this->getFields();
 		$allCustomDisplayFields = self::getCustomDisplayTitles();
-		$customFilter = json_decode( $instance['custom_filter'], true );
+		$customFilter = json_decode( empty ( $instance['custom_filter'] ) ? '{}' : $instance['custom_filter'], true );
 		foreach ( $customFilter as $name => $fieldAttrs ) {
 			// Make sure only legit fields are sent.
 			if ( $name === 'options' ) {
