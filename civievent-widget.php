@@ -338,7 +338,7 @@ class civievent_Widget extends WP_Widget {
 			return array();
 		} else {
 			return array(
-				'filter' => array( 'event_type_id' => intval( $instance['event_type_id'] ) )
+				'event_type_id' => intval( $instance['event_type_id'] )
 			);
 		}
 	}
