@@ -207,134 +207,44 @@ class civievent_Widget extends WP_Widget {
 
 		if ( version_compare( $this->_civiversion, '4.3.alpha1' ) < 0 ) { return; }
 
-		$fields = $this->getFields();
+		$customDisplay = $this->validCustomDisplayFields( $instance );
+		$customDisplayFields = array_intersect_key( self::getCustomDisplayTitles(), $customDisplay );
 
-		$standardDisplay = false;
-		if ( ! empty( $instance['custom_display'] ) && CRM_Utils_Array::value( 'admin_type', $instance ) === 'custom' ) {
-			// Get the custom display params.
-			$custom = json_decode( $instance['custom_display'], true );
-			foreach ( $custom as $name => $fieldAttrs ) {
-				// Make sure only legit fields are sent.
-				if ( empty( $fields[ $name ] ) ) {
-					unset( $custom[ $name ] );
-				}
-			}
-			if ( empty( $custom ) ) {
-				$standardDisplay = true;
-			} else {
-				// Get custom filters.
-				$customFilters = json_decode( CRM_Utils_Array::value( 'custom_filter', $instance, '' ), true );
-				$filterParams = array(
-					'start_date' => array( '>=' => date( 'Y-m-d' ) ),
-					'is_public' => 1,
-					'options' => array(
-						'sort' => 'start_date ASC',
-						'limit' => CRM_Utils_Array::value( 'limit', $instance, 5 ),
-					),
-				);
-				$allCustomDisplayFields = self::getCustomDisplayTitles();
-				// Set filter params only if they're legit fields or options.
-				if ( is_array( $customFilters ) ) {
-					foreach ( $customFilters as $name => $val ) {
-						if ( 'custom' === $name ) {
-							foreach ( $val as $option => $optionVal ) {
-								if ( in_array( $option, $okOptions ) ) {
-									switch ( $option ) {
-										case 'limit':
-										case 'offset':
-										case 'sort':
-											$filterParams['options'][ $option ] = $optionVal;
-									}
-								}
-							}
-						} elseif ( array_key_exists( $name, $fields ) && ! array_key_exists( $name, $allCustomDisplayFields ) ) {
-							$filterParams[ $name ] = $val;
-						}
-					}
-				}
-				$fieldsToRetrieve = array_keys( $custom );
-				$customDisplayFields = array_intersect_key( $allCustomDisplayFields, $custom );
-				foreach ( $customDisplayFields as $customDisplayField => $dontcare ) {
-					$fieldsToRetrieve = array_merge( $fieldsToRetrieve, self::getCustomDisplayField( $customDisplayField ) );
-				}
-				// Return fields should be based on the custom_display only.
-				$filterParams['return'] = array_unique( $fieldsToRetrieve );
-				try {
-					$eventsCustom = civicrm_api3( 'Event', 'get', $filterParams );
-					if ( ! empty( $eventsCustom['values'] ) ) {
-						$content = '<div class="civievent-widget-list civievent-widget-custom-display">';
-						$index = 0;
-						foreach ( $eventsCustom['values'] as $eventId => $event ) {
-							$oe = ($index&1) ? 'odd' : 'even';
-							$content .= "<div class=\"civievent-widget-event civievent-widget-event-$oe civievent-widget-event-$index\">";
-							$index++;
-							foreach ( $custom as $name => $fieldAttrs ) {
-								if ( empty( $event[ $name ] ) ) {
-									if ( array_key_exists( $name, $customDisplayFields ) ) {
-										$fieldVal = self::getCustomDisplayField( $name, $event );
-									} else {
-										continue;
-									}
-								} else {
-									$fieldVal = $event[ $name ];
-								}
-								$rowField = empty( $fieldAttrs['prefix'] ) ? '' : wp_filter_kses( $fieldAttrs['prefix'] );
-								if ( ! empty( $fieldAttrs['title'] ) ) {
-								 	$rowField .= empty( $fieldAttrs['wrapper'] ) ? "{$fields[ $name ]}: " : "<span class=\"civievent-widget-custom-label\">{$fields[ $name ]}: </span>";
-								}
-								$rowField .= empty( $fieldAttrs['wrapper'] ) ? $fieldVal : "<span class=\"civievent-widget-custom-value\">$fieldVal</span>";
-								$rowField .= empty( $fieldAttrs['suffix'] ) ? '' : wp_filter_kses( $fieldAttrs['suffix'] );
+		$defaultParams = array(
+			'start_date' => array( '>=' => date( 'Y-m-d' ) ),
+			'is_public' => 1,
+			'options' => array(
+				'sort' => 'start_date ASC',
+				'limit' => CRM_Utils_Array::value( 'limit', $instance, 5 ),
+			),
+		);
+		$eventTypeIdParams = $this->buildEventTypeIdParams( $instance );
+		$customFilterParams = $this->validCustomFilterFields( $instance );
+		$returnParams = $this->buildReturnParams( $customDisplay, $customDisplayFields );
+		$filterParams = array_merge( $defaultParams, $eventTypeIdParams, $customFilterParams, $returnParams );
+		$standardDisplay = empty( $customDisplay );
 
-								$rowClass = sanitize_html_class( "civievent-widget-custom-display-$name" );
-								$content .= empty( $fieldAttrs['wrapper'] ) ? "$rowField\n" : "<span class=\"$rowClass\">$rowField</span>\n";
-							}
-							$content .= '</div>';
-						}
-						$content .= '</div>';
+		try {
+			$customDisplayClass = $standardDisplay ? '' : ' civievent-widget-custom-display';
+			$content = "<div class=\"civievent-widget-list$customDisplayClass\">";
+			$eventsCustom = civicrm_api3( 'Event', 'get', $filterParams );
+			if ( ! empty( $eventsCustom['values'] ) ) {
+				$index = 0;
+				foreach ( $eventsCustom['values'] as $eventId => $event ) {
+					if ( $standardDisplay ) {
+						$content .= $this->standardEvent( $event, $instance, $index );
 					} else {
-						$content = '';
+						$content .= $this->customEvent( $event, $customDisplay, $customDisplayFields, $index );
 					}
-				} catch (CiviCRM_API3_Exception $e) {
-					CRM_Core_Error::debug_log_message( $e->getMessage() );
+					$index++;
 				}
+				$content .= '</div>';
 			}
-		} else {
-			$standardDisplay = true;
+		} catch (CiviCRM_API3_Exception $e) {
+			CRM_Core_Error::debug_log_message( $e->getMessage() );
 		}
 
 		if ( $standardDisplay ) {
-			// Outputs the content of the widget.
-			// apply event type filter on standard output.
-			$event_type_id = empty( $instance['event_type_id'] ) ? null : intval( $instance['event_type_id'] );
-			$cal = CRM_Event_BAO_Event::getCompleteInfo( null, $event_type_id );
-			$index = 0;
-			$content = '<div class="civievent-widget-list">';
-			foreach ( $cal as $event ) {
-				$url = CRM_Utils_Array::value( 'url', $event );
-				$title = CRM_Utils_Array::value( 'title', $event );
-				$summary = CRM_Utils_Array::value( 'summary', $event, '' );
-				$row = $this->dateFix( $event, 'civievent-widget-event' );
-				if ( $title ) {
-					$row .= ' <span class="civievent-widget-event-title">';
-					$row .= self::locFix( $event, $event['event_id'], $instance, 'civievent-widget-event' );
-					$row .= '<span class="civievent-widget-infolink">';
-					$row .= ($url) ? "<a href=\"$url\">$title</a>" : $title;
-					$row .= '</span>';
-
-					$row .= self::regFix( $event, $event['event_id'], 'civievent-widget' );
-
-					if ( $instance['summary'] ) {
-						$row .= "<span class=\"civievent-widget-event-summary\">$summary</span>";
-					}
-					$row .= '</span>';
-				}
-
-				$oe = ($index&1) ? 'odd' : 'even';
-				$content .= "<div class=\"civievent-widget-event civievent-widget-event-$oe civievent-widget-event-$index\">$row</div>";
-				$index++;
-				if ( $index >= $instance['limit'] ) { break; }
-			}
-			$content .= '</div>';
 			if ( $instance['alllink'] ) {
 				$viewall = CRM_Utils_System::url( 'civicrm/event/ical', 'reset=1&list=1&html=1' );
 				$content .= "<div class=\"civievent-widget-viewall\"><a href=\"$viewall\">" . ts( 'View all' ) . '</a></div>';
@@ -365,6 +275,186 @@ class civievent_Widget extends WP_Widget {
 			$content = "$wTitle<div class=\"$classes\">$content</div>";
 			echo $args['before_widget'] . $content . $args['after_widget'];
 		}
+	}
+
+	/**
+	 * Parse the "custom_display" JSON and return list of valid entries
+	 *
+	 * @param array $instance
+	 *   The widget instance.
+	 * @return array
+	 *   The valid "custom_display" entries.
+	 */
+	protected function validCustomDisplayFields ( $instance ) {
+		$fields = $this->getFields();
+
+		$instanceCustomDisplay = html_entity_decode( empty( $instance['custom_display'] ) ? '{}' : $instance['custom_display'] );
+		$customDisplay = json_decode( $instanceCustomDisplay, true );
+		foreach ( $customDisplay as $name => $fieldAttrs ) {
+			// Make sure only legit fields are sent.
+			if ( empty( $fields[ $name ] ) ) {
+				unset( $customDisplay[ $name ] );
+			}
+		}
+		return $customDisplay;
+	}
+
+	/**
+	 * Parse the "custom_filter" JSON and return list of valid entries
+	 *
+	 * @param array $instance
+	 *   The widget instance.
+	 * @return array
+	 *   The valid "custom_filter" entries.
+	 */
+	protected function validCustomFilterFields ( $instance ) {
+		$fields = $this->getFields();
+		$allCustomDisplayFields = self::getCustomDisplayTitles();
+		$instanceCustomFilter = html_entity_decode( empty ( $instance['custom_filter'] ) ? '{}' : $instance['custom_filter'] );
+		$customFilter = json_decode( $instanceCustomFilter, true );
+		foreach ( $customFilter as $name => $fieldAttrs ) {
+			// Make sure only legit fields are sent.
+			if ( $name === 'options' ) {
+				foreach ( $customFilter[ $name ] as $option => $optionValue ) {
+					if ( $option !== 'limit' && $option !== 'offset' && option !== 'sort' ) {
+						unset( $customFilter[ $name ][ $option ] );
+					}
+				}
+			} else if ( empty( $fields[ $name ] ) || array_key_exists( $name, $allCustomDisplayFields ) ) {
+				unset( $customFilter[ $name ] );
+			}
+		}
+		return $customFilter;
+	}
+
+	/**
+	 * Generate filter params for the "event_type_id" setting
+	 *
+	 * @param array $instance
+	 *   The widget instance.
+	 * @return array
+	 *   Filter params representing the "event_type_id" setting.
+	 */
+	protected function buildEventTypeIdParams ( $instance ) {
+		if ( empty( $instance['event_type_id'] ) ) {
+			return array();
+		} else {
+			return array(
+				'event_type_id' => intval( $instance['event_type_id'] )
+			);
+		}
+	}
+
+	/**
+	 * Generate return params for the event query
+	 *
+	 * @param array $customDisplay
+	 *   The list of custom display entries.
+	 * @param array $customDisplayFields
+	 *   The list of custom display fields.
+	 * @return array
+	 *   Return params for the event query.
+	 */
+	protected function buildReturnParams ( $customDisplay, $customDisplayFields ) {
+		if ( empty( $customDisplay ) ) {
+			return array(
+				'return' => array(
+					'title',
+					'summary',
+					'start_date',
+					'end_date',
+					'is_online_registration',
+					'registration_start_date',
+					'registration_end_date',
+					'registration_link_text',
+				),
+			);
+		} else {
+			$fieldsToRetrieve = array_keys( $customDisplay );
+			foreach ( $customDisplayFields as $customDisplayField => $dontcare ) {
+				$fieldsToRetrieve = array_merge( $fieldsToRetrieve, self::getCustomDisplayField( $customDisplayField ) );
+			}
+			return array( 'return' => array_unique( $fieldsToRetrieve ) );
+		}
+	}
+
+	/**
+	 * Generate HTML representation of a custom event
+	 *
+	 * @param array  $event
+	 *   The event details.
+	 * @param array $customDisplay
+	 *   The list of custom display entries.
+	 * @param array $customDisplayFields
+	 *   The list of custom display fields.
+	 * @param integer $index
+	 *   The index of this event.
+	 * @return string
+	 *   An HTML representation of a custom event.
+	 */
+	protected function customEvent ( $event, $customDisplay, $customDisplayFields, $index ) {
+		$oe = ($index&1) ? 'odd' : 'even';
+		$content .= "<div class=\"civievent-widget-event civievent-widget-event-$oe civievent-widget-event-$index\">";
+		foreach ( $customDisplay as $name => $fieldAttrs ) {
+			if ( empty( $event[ $name ] ) ) {
+				if ( array_key_exists( $name, $customDisplayFields ) ) {
+					$fieldVal = self::getCustomDisplayField( $name, $event );
+				} else {
+					continue;
+				}
+			} else {
+				$fieldVal = $event[ $name ];
+			}
+			$rowField = empty( $fieldAttrs['prefix'] ) ? '' : wp_filter_kses( $fieldAttrs['prefix'] );
+			if ( ! empty( $fieldAttrs['title'] ) ) {
+				$rowField .= empty( $fieldAttrs['wrapper'] ) ? "{$fields[ $name ]}: " : "<span class=\"civievent-widget-custom-label\">{$fields[ $name ]}: </span>";
+			}
+			$rowField .= empty( $fieldAttrs['wrapper'] ) ? $fieldVal : "<span class=\"civievent-widget-custom-value\">$fieldVal</span>";
+			$rowField .= empty( $fieldAttrs['suffix'] ) ? '' : wp_filter_kses( $fieldAttrs['suffix'] );
+
+			$rowClass = sanitize_html_class( "civievent-widget-custom-display-$name" );
+			$content .= empty( $fieldAttrs['wrapper'] ) ? "$rowField\n" : "<span class=\"$rowClass\">$rowField</span>\n";
+		}
+		$content .= '</div>';
+		return $content;
+	}
+
+	/**
+	 * Generate HTML representation of a standard event
+	 *
+	 * @param array  $event
+	 *   The event details.
+	 * @param array $instance
+	 *   The widget instance.
+	 * @param integer $index
+	 *   The index of this event.
+	 * @return string
+	 *   An HTML representation of a standard event.
+	 */
+	protected function standardEvent( $event, $instance, $index ) {
+		$oe = ($index&1) ? 'odd' : 'even';
+		$url = CRM_Utils_System::url( 'civicrm/event/info', 'reset=1&id=' . $event['id'], true, null, false );
+		$title = CRM_Utils_Array::value( 'title', $event );
+		$summary = CRM_Utils_Array::value( 'summary', $event, '' );
+		$content = "<div class=\"civievent-widget-event civievent-widget-event-$oe civievent-widget-event-$index\">";
+		$content .= $this->dateFix( $event, 'civievent-widget-event' );
+		if ( $title ) {
+			$content .= ' <span class="civievent-widget-event-title">';
+			$content .= self::locFix( $event, $event['id'], $instance, 'civievent-widget-event' );
+			$content .= '<span class="civievent-widget-infolink">';
+			$content .= ($url) ? "<a href=\"$url\">$title</a>" : $title;
+			$content .= '</span>';
+
+			$content .= self::regFix( $event, $event['id'], 'civievent-widget' );
+
+			if ( $instance['summary'] ) {
+				$content .= "<span class=\"civievent-widget-event-summary\">$summary</span>";
+			}
+			$content .= '</span>';
+		}
+
+		$content .= "</div>";
+		return $content;
 	}
 
 	/**
