@@ -221,8 +221,7 @@ class civievent_Widget extends WP_Widget {
 		$eventTypeIdParams = $this->buildEventTypeIdParams( $instance );
 		$customFilterParams = $this->validCustomFilterFields( $instance );
 		$returnParams = $this->buildReturnParams( $customDisplay, $customDisplayFields );
-		$filterParams = array_merge_recursive( $defaultParams, $eventTypeIdParams, $customFilterParams, $returnParams );
-
+		$filterParams = array_merge( $defaultParams, $eventTypeIdParams, $customFilterParams, $returnParams );
 		$standardDisplay = empty( $customDisplay );
 
 		try {
@@ -288,7 +287,9 @@ class civievent_Widget extends WP_Widget {
 	 */
 	protected function validCustomDisplayFields ( $instance ) {
 		$fields = $this->getFields();
-		$customDisplay = json_decode( empty( $instance['custom_display'] ) ? '{}' : $instance['custom_display'], true );
+
+		$instanceCustomDisplay = html_entity_decode( empty( $instance['custom_display'] ) ? '{}' : $instance['custom_display'] );
+		$customDisplay = json_decode( $instanceCustomDisplay, true );
 		foreach ( $customDisplay as $name => $fieldAttrs ) {
 			// Make sure only legit fields are sent.
 			if ( empty( $fields[ $name ] ) ) {
@@ -309,7 +310,8 @@ class civievent_Widget extends WP_Widget {
 	protected function validCustomFilterFields ( $instance ) {
 		$fields = $this->getFields();
 		$allCustomDisplayFields = self::getCustomDisplayTitles();
-		$customFilter = json_decode( empty ( $instance['custom_filter'] ) ? '{}' : $instance['custom_filter'], true );
+		$instanceCustomFilter = html_entity_decode( empty ( $instance['custom_filter'] ) ? '{}' : $instance['custom_filter'] );
+		$customFilter = json_decode( $instanceCustomFilter, true );
 		foreach ( $customFilter as $name => $fieldAttrs ) {
 			// Make sure only legit fields are sent.
 			if ( $name === 'options' ) {
