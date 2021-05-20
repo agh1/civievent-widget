@@ -550,7 +550,10 @@ HEREDOC;
 		$instance = array();
 		$instance['title'] = ( ! empty( $new_instance['title'] ) ) ? strip_tags( $new_instance['title'] ) : '';
 		if ( ! empty( $new_instance['wtheme'] ) ) {
-			$instance['wtheme'] = array_shift( explode( ' ', trim( strip_tags( $new_instance['wtheme'] ) ) ) );
+			// Break the user provided widget theme value into an array, split by spaces.
+			$wthemes = explode( ' ', trim( wp_strip_all_tags( $new_instance['wtheme'] ) ) );
+			// Set the widget theme to the first value in the wthemes array.
+			$instance['wtheme'] = array_shift( $wthemes );
 		} else {
 			$instance['wtheme'] = '';
 		}
