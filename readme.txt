@@ -2,7 +2,7 @@
 Contributors: agh1
 Tags: civicrm, events, event, nonprofit, crm, calendar
 Requires at least: 3.3
-Tested up to: 4.9
+Tested up to: 5.7.2
 Stable tag: 3.2
 License: AGPLv3 or later
 License URI: http://www.gnu.org/licenses/agpl-3.0.html
